@@ -1,5 +1,10 @@
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+library;
+export 'player_view.dart';
+export 'iplayer.dart';
+export 'controller/player_controller.dart';
+
+export 'model/resource/chapter_model.dart';
+export 'model/resource/resource_model.dart';
+export 'model/resource/api_model.dart';
+export 'model/resource/source_group_model.dart';
+export 'utils/player_utils.dart';

@@ -1,7 +1,7 @@
 name: flutter_player_ui
 description: "A new Flutter project."
 version: 0.0.1
-homepage:
+homepage: ''
 
 environment:
   sdk: ^3.8.1
@@ -10,6 +10,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  audio_video_progress_bar: ^2.0.3
+  signals: ^6.3.0
+  fullscreen_window: ^1.2.1
+  scrollview_observer: ^1.26.2
+  wakelock_plus: ^1.4.0
 
 dev_dependencies:
   flutter_test:
