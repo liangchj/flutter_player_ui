@@ -15,29 +15,39 @@ class PlayerUtils {
     List<ChapterModel>? chapterList,
     Function(PlayerController)? playerControllerCallback,
   }) {
+    PlayerController? controller = player?.playerController;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          body: PlayerView(
-            player: player,
-            controller: player?.playerController,
-            onCreatePlayerController: (playerController) {
-              playerController.onlyFullscreen = true;
-              playerController.fullscreenUtils.enterFullscreen();
+        builder: (context) => PopScope(
+          canPop: true,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) {
+              controller?.fullscreenUtils.unlockOrientation();
+            }
+          },
+          child: Scaffold(
+            body: PlayerView(
+              player: player,
+              controller: player?.playerController,
+              onCreatePlayerController: (playerController) {
+                controller = playerController;
+                playerController.onlyFullscreen = true;
+                playerController.fullscreenUtils.enterFullscreen();
 
-              playerController.playerState.autoPlay = true;
+                playerController.playerState.autoPlay = true;
 
-              if (resourceModel != null) {
-                playerController.resourceState.resourceModel.value =
-                    resourceModel;
-              }
-              if (chapterList != null) {
-                playerController.resourceState.chapterList.value = chapterList;
-              }
+                if (resourceModel != null) {
+                  playerController.resourceState.resourceModel.value =
+                      resourceModel;
+                }
+                if (chapterList != null) {
+                  playerController.resourceState.chapterList.value = chapterList;
+                }
 
-              playerControllerCallback?.call(playerController);
-            },
+                playerControllerCallback?.call(playerController);
+              },
+            ),
           ),
         ),
       ),

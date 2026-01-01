@@ -34,7 +34,7 @@ class MyDanmakuController {
         if ( value) {
           danmakuState.danmakuView.value = Container(color: Colors.cyan,);
         } else {
-          danmakuState.danmakuView.value = Container();
+          danmakuState.danmakuView.value = Container(color: Colors.transparent,);
         }
       })
     ]);

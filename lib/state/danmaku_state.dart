@@ -10,7 +10,9 @@ import '../model/danmaku/danmaku_speed_model.dart';
 
 class DanmakuState {
   // 弹幕组件
-  final Signal<Widget> danmakuView = Signal(Container());
+  final Signal<Widget> danmakuView = Signal(Container(
+    color: Colors.transparent,
+  ));
   // 是否启动弹幕
   final Signal<bool> isVisible = signal(true);
 

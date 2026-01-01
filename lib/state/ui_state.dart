@@ -270,8 +270,18 @@ class UIState {
   void dispose() {
     _tickerProviderEffectCleanup?.call();
     tickerProvider.dispose();
-    for (var element in dynamicOverlayUIList.value) {
-      element.dispose();
+    try {
+      if (dynamicOverlayUIList.value.isNotEmpty) {
+      for (var element in dynamicOverlayUIList.value) {
+        try {
+          element.dispose();
+        } catch (e) {
+          // ignore: avoid_catches_without_on_clauses
+        }
+      }
+      }
+    } catch (e) {
+      // ignore: avoid_catches_without_on_clauses
     }
     dynamicOverlayUIList.dispose();
     commonUISizeModel.dispose();

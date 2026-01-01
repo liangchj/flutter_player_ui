@@ -1,9 +1,9 @@
 import 'controller/player_controller.dart';
 
 abstract class IPlayer {
-  final PlayerController playerController;
+  PlayerController? playerController;
 
-  IPlayer({required this.playerController});
+  IPlayer({this.playerController});
   // 播放器初始化
   Future<void> onInitPlayer();
 
@@ -30,4 +30,8 @@ abstract class IPlayer {
   void updateState();
 
   void changeVideoUrl({bool autoPlay = true});
+
+  IPlayer copyWith({
+    PlayerController? playerController,
+  });
 }

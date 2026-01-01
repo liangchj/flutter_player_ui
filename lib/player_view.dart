@@ -23,24 +23,34 @@ class PlayerView extends StatefulWidget {
 class _PlayerViewState extends State<PlayerView> {
   late PlayerController playerController;
 
+  bool controllerIsNull = false;
+
   @override
   void initState() {
     super.initState();
     if (widget.controller == null) {
+      if (widget.player?.playerController == null) {
+        controllerIsNull = true;
+      }
       playerController = widget.player?.playerController ?? PlayerController();
     } else {
       playerController = widget.controller!;
     }
     assert(widget.player != null || playerController.player.value != null);
-    if (playerController.player.value  == null) {
+    if (playerController.player.value == null && widget.player != null) {
       playerController.player.value = widget.player;
     }
+    if (playerController.player.value!.playerController == null &&
+        playerController.player.value!.playerController != playerController) {
+      playerController.player.value!.playerController = playerController;
+    }
+
     widget.onCreatePlayerController?.call(playerController);
   }
 
   @override
   void dispose() {
-    if (widget.controller == null && (widget.player == null || widget.player?.playerController == null)) {
+    if (controllerIsNull) {
       playerController.dispose();
     }
     super.dispose();
@@ -53,7 +63,11 @@ class _PlayerViewState extends State<PlayerView> {
         // VideoPlayer(controller),
         // Positioned.fill(child: Container(color: Colors.grey)),
         Positioned.fill(
-          child: Watch((c) => playerController.playerState.playerView.value),
+          // child: Watch((c) => playerController.playerState.playerView.value),
+          child: Watch((c) {
+            print("播放器：${playerController.playerState.playerView.value}");
+            return playerController.playerState.playerView.value;
+          }),
         ),
         PlayerUI(playerController: playerController),
       ],

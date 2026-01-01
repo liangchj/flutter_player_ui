@@ -51,7 +51,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
           ? Container()
           : Stack(
               children: [
-                Positioned.fill(
+                /*Positioned.fill(
                   child: Watch(
                     (context) =>
                         uiController
@@ -61,7 +61,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                             .value ??
                         Container(),
                   ),
-                ),
+                ),*/
                 ...uiController.uiState.overlayUIList,
               ],
             ),

@@ -5,27 +5,27 @@ import '../controller/player_controller.dart';
 import '../state/player_state.dart';
 
 class FullscreenUtils {
-  final PlayerController playeController;
+  final PlayerController playerController;
 
-  FullscreenUtils(this.playeController);
+  FullscreenUtils(this.playerController);
 
-  PlayerState get playerState => playeController.playerState;
+  PlayerState get playerState => playerController.playerState;
 
   void toggleFullscreen({bool exit = false, required BuildContext context}) {
-    bool playing = playeController.player.value?.playing ?? false;
-    if (playeController.player.value != null && playing) {
-      playeController.player.value!.pause();
+    bool playing = playerController.player.value?.playing ?? false;
+    if (playerController.player.value != null && playing) {
+      playerController.player.value!.pause();
     }
     if (playerState.isFullscreen.value || exit) {
       bool fullscreen = playerState.isFullscreen.value;
       exitFullscreen(context);
-      if (fullscreen && !playeController.onlyFullscreen && playing) {
-        playeController.player.value!.play();
+      if (fullscreen && !playerController.onlyFullscreen && playing) {
+        playerController.player.value!.play();
       }
     } else {
       enterFullscreen();
       if (playing) {
-        playeController.player.value!.play();
+        playerController.player.value!.play();
       }
     }
     /*if (exit) {
@@ -55,10 +55,10 @@ class FullscreenUtils {
   void exitFullscreen(BuildContext context) {
     // FullScreen.setFullScreen(false);
     if (!playerState.isFullscreen.value ||
-        playeController.onlyFullscreen) {
-      if (playeController.onlyFullscreen) {
-        playeController.pause();
-        playeController.player.value?.onDisposePlayer();
+        playerController.onlyFullscreen) {
+      if (playerController.onlyFullscreen) {
+        playerController.pause();
+        playerController.player.value?.onDisposePlayer();
       }
       Navigator.of(context).pop();
     }

@@ -12,8 +12,10 @@ class PlayerController {
   late ResourceState resourceState;
   late final UIController uiController;
   final Signal<IPlayer?> player = signal(null);
+  final Signal<bool> playerInitialized = signal(false);
   late FullscreenUtils fullscreenUtils;
   bool _initialized = false;
+  bool get initialized => _initialized;
   // 标记是否只有全屏页面
   bool onlyFullscreen = false;
   final List<EffectCleanup> _effectCleanupList = [];
@@ -24,18 +26,28 @@ class PlayerController {
     fullscreenUtils = FullscreenUtils(this);
     _init();
     _initialized = true;
+
   }
 
   void _init() {
     _effectCleanupList.addAll([
+      effect(() {
+        if (player.value != null) {
+          untracked(() {
+            player.value!.playerController = this;
+          });
+        }
+      }),
       // 监听播放器
       effect(() {
-        player.value?.onInitPlayer();
+        if (player.value != null) {
+          player.value?.onInitPlayer();
+        }
       }),
       // 监听播放器初始化
       effect(() {
         if (!playerState.isInitialized.value) {
-          effect(() {
+          untracked(() {
             playerState.isPlaying.value = false;
             playerState.isBuffering.value = false;
           });
@@ -44,7 +56,7 @@ class PlayerController {
       // 监听播放完成
       effect(() {
         if (playerState.isFinished.value) {
-          effect(() {
+          untracked(() {
             playerState.isPlaying.value = false;
             playerState.isBuffering.value = false;
             if (resourceState.haveNext) {
@@ -59,7 +71,7 @@ class PlayerController {
         if (resourceStateModel.chapterIndex < 0) {
           return;
         }
-        effect(() async {
+        untracked(() async {
           if (resourceState.resourceModel.value == null &&
               resourceState.chapterList.value == null) {
             return;
@@ -104,13 +116,13 @@ class PlayerController {
     ]);
   }
 
-  void dispose() {
-    player.dispose();
-    uiController.dispose();
+  Future<void> dispose() async {
     for (var cleanup in _effectCleanupList) {
       cleanup();
     }
+    await stop();
     player.dispose();
+    uiController.dispose();
   }
 
   /// 重置播放状态

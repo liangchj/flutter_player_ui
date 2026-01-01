@@ -88,7 +88,6 @@ class UIController {
     for (var e in _effectCleanupList) {
       e.call();
     }
-    uiState.dispose();
   }
 
   void _initBottomControlItemList(Color textColor) {
