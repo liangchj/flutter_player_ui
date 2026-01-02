@@ -1,7 +1,7 @@
 library;
 export 'player_view.dart';
 export 'iplayer.dart';
-export 'controller/player_controller.dart';
+export 'view_model/player_view_model.dart';
 
 export 'model/resource/chapter_model.dart';
 export 'model/resource/resource_model.dart';

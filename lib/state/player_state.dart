@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:signals/signals.dart';
 
 import '../enum/player_fit_enum.dart';
+import 'base_state.dart';
 
-class PlayerState {
+class PlayerState extends BaseState {
   // 播放器
   final Signal<Widget> playerView = Signal(Container());
   // 全屏
@@ -66,4 +67,30 @@ class PlayerState {
 
   // 播放速度： ['0.25x', '0.5x', '0.75x', '1.0x', '1.25x', '1.5x', '1.75x', '2.0x']
   final Signal<double> playSpeed = Signal(1.0);
+
+  @override
+  void dispose() {
+    playerView.dispose();
+    isFullscreen.dispose();
+    aspectRatio.dispose();
+    fit.dispose();
+    errorMsg.dispose();
+    isInitialized.dispose();
+    isPlaying.dispose();
+    isBuffering.dispose();
+    isSeeking.dispose();
+    isFinished.dispose();
+    duration.dispose();
+    positionDuration.dispose();
+    bufferedDuration.dispose();
+    isDragging.dispose();
+    draggingSecond.dispose();
+    volume.dispose();
+    brightness.dispose();
+    isVolumeDragging.dispose();
+    isBrightnessDragging.dispose();
+    playSpeed.dispose();
+
+    disposed = true;
+  }
 }

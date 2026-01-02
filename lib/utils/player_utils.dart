@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../controller/player_controller.dart';
 import '../iplayer.dart';
 import '../model/resource/chapter_model.dart';
 import '../model/resource/resource_model.dart';
 import '../player_view.dart';
+import '../view_model/player_view_model.dart';
 
 class PlayerUtils {
   // 本地视频播放器
@@ -13,9 +13,9 @@ class PlayerUtils {
     IPlayer? player,
     ResourceModel? resourceModel,
     List<ChapterModel>? chapterList,
-    Function(PlayerController)? playerControllerCallback,
+    Function(PlayerViewModel)? playerViewModelCallback,
   }) {
-    PlayerController? controller = player?.playerController;
+    PlayerViewModel? viewModel = player?.playerViewModel;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -23,29 +23,28 @@ class PlayerUtils {
           canPop: true,
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
-              controller?.fullscreenUtils.unlockOrientation();
+              viewModel?.fullscreenUtils.unlockOrientation();
             }
           },
           child: Scaffold(
             body: PlayerView(
               player: player,
-              controller: player?.playerController,
-              onCreatePlayerController: (playerController) {
-                controller = playerController;
-                playerController.onlyFullscreen = true;
-                playerController.fullscreenUtils.enterFullscreen();
+              playerViewModel: player?.playerViewModel,
+              onCreatePlayerViewModel: (value) {
+                viewModel = value;
+                viewModel!.onlyFullscreen = true;
+                viewModel!.fullscreenUtils.enterFullscreen();
 
-                playerController.playerState.autoPlay = true;
+                viewModel!.playerState.autoPlay = true;
 
                 if (resourceModel != null) {
-                  playerController.resourceState.resourceModel.value =
-                      resourceModel;
+                  viewModel!.resourceState.resourceModel.value = resourceModel;
                 }
                 if (chapterList != null) {
-                  playerController.resourceState.chapterList.value = chapterList;
+                  viewModel!.resourceState.chapterList.value = chapterList;
                 }
 
-                playerControllerCallback?.call(playerController);
+                playerViewModelCallback?.call(viewModel!);
               },
             ),
           ),

@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_player_ui/controller/my_danmaku_controller.dart';
-import 'package:flutter_player_ui/controller/player_controller.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/common_constant.dart';
@@ -16,12 +13,15 @@ import '../state/danmaku_state.dart';
 import '../state/player_state.dart';
 import '../state/ui_state.dart';
 import '../utils/calculate_color_utils.dart';
+import 'base_view_model.dart';
+import 'my_danmaku_view_model.dart';
+import 'player_view_model.dart';
 
-class UIController {
-  final PlayerController playerController;
-  late MyDanmakuController myDanmakuController;
+class UIViewModel extends BaseViewModel {
+  final PlayerViewModel playerViewModel;
+  late MyDanmakuViewModel myDanmakuViewModel;
   late UIState uiState;
-  DanmakuState get danmakuState => myDanmakuController.danmakuState;
+  DanmakuState get danmakuState => myDanmakuViewModel.danmakuState;
   List<BottomUIItemModel> fullscreenBottomUIItemList = [];
 
   Color get backgroundColor => StyleConstant.uIBackgroundColor;
@@ -37,10 +37,10 @@ class UIController {
   Size? _lastWindowSize; // 缓存上一次的窗口尺寸，避免重复计算
   Timer? hideTimer;
   bool isWeb = kIsWeb;
-  PlayerState get playerState => playerController.playerState;
-  UIController(this.playerController) {
+  PlayerState get playerState => playerViewModel.playerState;
+  UIViewModel(this.playerViewModel) {
     uiState = UIState(this);
-    myDanmakuController = MyDanmakuController(uiController: this);
+    myDanmakuViewModel = MyDanmakuViewModel(uiViewModel: this);
     _initBottomControlItemList(textColor);
     _initEffect();
   }
@@ -82,12 +82,14 @@ class UIController {
     ]);
   }
 
+  @override
   void dispose() {
     hideTimer?.cancel();
     uiState.dispose();
     for (var e in _effectCleanupList) {
       e.call();
     }
+    disposed = true;
   }
 
   void _initBottomControlItemList(Color textColor) {
@@ -99,7 +101,7 @@ class UIController {
         child: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           color: StyleConstant.iconColor,
-          onPressed: () => playerController.playOrPause(),
+          onPressed: () => playerViewModel.playOrPause(),
           icon: Watch((context) {
             var isFinished = playerState.isFinished.value;
             var isPlaying = playerState.isPlaying.value;
@@ -119,8 +121,7 @@ class UIController {
         child: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           color: StyleConstant.iconColor,
-          // onPressed: () => nextPlay(),
-          onPressed: () => {},
+          onPressed: () => playerViewModel.nextPlay(),
           icon: IconConstant.nextPlayIcon,
         ),
         /*child: Obx(
@@ -147,12 +148,11 @@ class UIController {
         fixedWidth: StyleConstant.bottomBtnSize,
         priority: 6,
         child: Watch(
-              (context) => Stack(
+          (context) => Stack(
             children: [
               IconButton(
                 onPressed: () => {
-                  danmakuState.isVisible.value =
-                  !danmakuState.isVisible.value,
+                  danmakuState.isVisible.value = !danmakuState.isVisible.value,
                 },
                 icon: danmakuState.isVisible.value
                     ? IconConstant.danmakuOpen
@@ -388,8 +388,8 @@ class UIController {
         );
         maxWidth = uiState.uiSize.value.width * 0.8;
       }
-      uiState.commonUISizeModel.value =
-          uiState.commonUISizeModel.value.copyWith(
+      uiState.commonUISizeModel.value = uiState.commonUISizeModel.value
+          .copyWith(
             height: height,
             maxHeight: maxHeight,
             width: width,
@@ -466,8 +466,15 @@ class UIController {
   /// 根据Key值显示UI
   void showUIByKeyList(List<String> keyList) {
     for (var key in keyList) {
-      OverlayUIModel? element = uiState.dynamicOverlayUIList.value
-          .firstWhereOrNull((element) => element.name == key);
+      OverlayUIModel? element;
+
+      for (var e in uiState.dynamicOverlayUIList.value) {
+        if (e.name == key) {
+          element = e;
+          break;
+        }
+      }
+
       if (element == null) {
         continue;
       }
@@ -584,7 +591,7 @@ class UIController {
     var second =
         playerState.dragProgressPositionDuration.inSeconds +
         playerState.draggingSecond.value;
-    playerController.seekTo(Duration(seconds: second.abs() > 0 ? second : 0));
+    playerViewModel.seekTo(Duration(seconds: second.abs() > 0 ? second : 0));
     // 定时隐藏拖动进度ui
     _progressTimer = Timer.periodic(
       CommonConstant.volumeOrBrightnessUIShowDuration,

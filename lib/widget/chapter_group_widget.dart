@@ -5,22 +5,22 @@ import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/style_constant.dart';
-import '../controller/player_controller.dart';
-import '../controller/ui_controller.dart';
 import '../model/resource/chapter_group_model.dart';
 import '../model/source_option_model.dart';
 import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/calculate_color_utils.dart';
+import '../view_model/player_view_model.dart';
+import '../view_model/ui_view_model.dart';
 import 'clickable_button_widget.dart';
 
 class ChapterGroupWidget extends StatefulWidget {
   const ChapterGroupWidget({
     super.key,
-    required this.uiController,
+    required this.uiViewModel,
     required this.option,
   });
-  final UIController uiController;
+  final UIViewModel uiViewModel;
   final SourceOptionModel option;
 
   @override
@@ -29,11 +29,11 @@ class ChapterGroupWidget extends StatefulWidget {
 
 class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
   SourceOptionModel get option => widget.option;
-  UIController get uiController => widget.uiController;
-  PlayerController get playerController => uiController.playerController;
-  PlayerState get playerState => playerController.playerState;
+  UIViewModel get uiViewModel => widget.uiViewModel;
+  PlayerViewModel get playerViewModel => uiViewModel.playerViewModel;
+  PlayerState get playerState => playerViewModel.playerState;
 
-  ResourceState get resourceState => playerController.resourceState;
+  ResourceState get resourceState => playerViewModel.resourceState;
   ScrollController? _scrollController;
   ListObserverController? _observerController;
   late int _activatedIndex;
@@ -46,10 +46,10 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
   // 全屏时背景是黑色
   Color get textColor => option.backgroundColor == null
       ? isFullscreen
-            ? uiController.textColor
+            ? uiViewModel.textColor
             : CalculateColorUtils.calculateTextColor(Colors.white)
       : CalculateColorUtils.calculateTextColor(Colors.white);
-  Color get activatedTextColor => uiController.activatedTextColor;
+  Color get activatedTextColor => uiViewModel.activatedTextColor;
 
   @override
   void initState() {

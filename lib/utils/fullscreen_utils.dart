@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../controller/player_controller.dart';
 import '../state/player_state.dart';
+import '../view_model/player_view_model.dart';
 
 class FullscreenUtils {
-  final PlayerController playerController;
+  final PlayerViewModel playerViewModel;
 
-  FullscreenUtils(this.playerController);
+  FullscreenUtils(this.playerViewModel);
 
-  PlayerState get playerState => playerController.playerState;
+  PlayerState get playerState => playerViewModel.playerState;
 
   void toggleFullscreen({bool exit = false, required BuildContext context}) {
-    bool playing = playerController.player.value?.playing ?? false;
-    if (playerController.player.value != null && playing) {
-      playerController.player.value!.pause();
+    bool playing = playerViewModel.player.value?.playing ?? false;
+    if (playerViewModel.player.value != null && playing) {
+      playerViewModel.player.value!.pause();
     }
     if (playerState.isFullscreen.value || exit) {
       bool fullscreen = playerState.isFullscreen.value;
       exitFullscreen(context);
-      if (fullscreen && !playerController.onlyFullscreen && playing) {
-        playerController.player.value!.play();
+      if (fullscreen && !playerViewModel.onlyFullscreen && playing) {
+        playerViewModel.player.value!.play();
       }
     } else {
       enterFullscreen();
       if (playing) {
-        playerController.player.value!.play();
+        playerViewModel.player.value!.play();
       }
     }
     /*if (exit) {
@@ -54,11 +54,10 @@ class FullscreenUtils {
 
   void exitFullscreen(BuildContext context) {
     // FullScreen.setFullScreen(false);
-    if (!playerState.isFullscreen.value ||
-        playerController.onlyFullscreen) {
-      if (playerController.onlyFullscreen) {
-        playerController.pause();
-        playerController.player.value?.onDisposePlayer();
+    if (!playerState.isFullscreen.value || playerViewModel.onlyFullscreen) {
+      if (playerViewModel.onlyFullscreen) {
+        playerViewModel.pause();
+        playerViewModel.player.value?.onDisposePlayer();
       }
       Navigator.of(context).pop();
     }

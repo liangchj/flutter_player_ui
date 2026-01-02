@@ -1,29 +1,29 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_player_ui/ui/play_speed_ui.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/common_constant.dart';
 import '../constant/key_constant.dart';
 import '../constant/style_constant.dart';
-import '../controller/player_controller.dart';
-import '../controller/ui_controller.dart';
 import '../enum/player_fit_enum.dart';
 import '../enum/player_ui_key_enum.dart';
 import '../state/player_state.dart';
+import '../view_model/player_view_model.dart';
+import '../view_model/ui_view_model.dart';
 import '../widget/build_text_widget.dart';
+import 'play_speed_ui.dart';
 
 class SettingUI extends StatefulWidget {
   const SettingUI({
     super.key,
-    required this.uiController,
+    required this.uiViewModel,
     this.bottomSheet = false,
     this.backgroundColor,
     this.textColor,
     this.activatedTextColor,
   });
-  final UIController uiController;
+  final UIViewModel uiViewModel;
   final bool bottomSheet;
   final Color? backgroundColor;
   final Color? textColor;
@@ -34,14 +34,14 @@ class SettingUI extends StatefulWidget {
 }
 
 class _SettingUIState extends State<SettingUI> {
-  UIController get uiController => widget.uiController;
-  PlayerController get playerController => uiController.playerController;
-  PlayerState get playerState => playerController.playerState;
+  UIViewModel get uiViewModel => widget.uiViewModel;
+  PlayerViewModel get playerViewModel => uiViewModel.playerViewModel;
+  PlayerState get playerState => playerViewModel.playerState;
 
-  Color get backgroundColor => uiController.backgroundColor;
-  Color get textColor => uiController.textColor;
+  Color get backgroundColor => uiViewModel.backgroundColor;
+  Color get textColor => uiViewModel.textColor;
   Color get activatedTextColor =>
-      widget.activatedTextColor ?? uiController.activatedTextColor;
+      widget.activatedTextColor ?? uiViewModel.activatedTextColor;
   @override
   Widget build(BuildContext context) {
     final fontSize = Theme.of(context).textTheme.bodyMedium?.fontSize;
@@ -58,17 +58,19 @@ class _SettingUIState extends State<SettingUI> {
       return ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight:
-              uiController.uiState.commonUISizeModel.value.maxHeight ??
+              uiViewModel.uiState.commonUISizeModel.value.maxHeight ??
               double.infinity,
           maxWidth:
-              uiController.uiState.commonUISizeModel.value.maxWidth ??
+              uiViewModel.uiState.commonUISizeModel.value.maxWidth ??
               double.infinity,
         ),
         child: Container(
           key: Key(KeyConstant.settingUI),
           color: backgroundColor,
-          width: uiController.uiState.commonUISizeModel.value.width,
-          height: uiController.uiState.commonUISizeModel.value.height ?? double.infinity,
+          width: uiViewModel.uiState.commonUISizeModel.value.width,
+          height:
+              uiViewModel.uiState.commonUISizeModel.value.height ??
+              double.infinity,
           padding: EdgeInsets.all(StyleConstant.safeSpace),
           child: ListView(children: list),
         ),
@@ -136,7 +138,7 @@ class _SettingUIState extends State<SettingUI> {
             width: double.infinity,
             height: (fontSize ?? 14) + StyleConstant.safeSpace,
             child: PlaySpeedUI(
-              uiController: uiController,
+              uiViewModel: uiViewModel,
               bottomSheet: true,
               singleHorizontalScroll: true,
               showActivatedBackgroundColor: false,
@@ -193,7 +195,7 @@ class _SettingUIState extends State<SettingUI> {
           InkWell(
             onTap: () {
               // LoggerUtils.logger.d("弹幕设置");
-              uiController.onlyShowUIByKeyList([
+              uiViewModel.onlyShowUIByKeyList([
                 UIKeyEnum.danmakuSettingUI.name,
               ], ignoreLimit: true);
             },

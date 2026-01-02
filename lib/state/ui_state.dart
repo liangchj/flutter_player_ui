@@ -5,7 +5,6 @@ import '../constant/common_constant.dart';
 import '../constant/key_constant.dart';
 import '../constant/position_constant.dart';
 import '../constant/tween_constant.dart';
-import '../controller/ui_controller.dart';
 import '../enum/player_ui_key_enum.dart';
 import '../model/overlay_ui_model.dart';
 import '../model/ui_size_model.dart';
@@ -22,14 +21,16 @@ import '../ui/screenshot_ui.dart';
 import '../ui/setting_ui.dart';
 import '../ui/top_ui.dart';
 import '../ui/volume_ui.dart';
+import '../view_model/ui_view_model.dart';
+import 'base_state.dart';
 
-class UIState {
-  final UIController uiController;
-  UIState(this.uiController) {
+class UIState extends BaseState {
+  final UIViewModel uiViewModel;
+  UIState(this.uiViewModel) {
     fixedOverlayUIList.add(
       Positioned.fill(
         key: ValueKey(KeyConstant.backgroundEventUIKey),
-        child: BackgroundEventUI(uiController: uiController),
+        child: BackgroundEventUI(uiViewModel: uiViewModel),
       ),
     );
     _init();
@@ -139,7 +140,7 @@ class UIState {
   void _init() {
     topUI = SlideOverlayUIModel(
       name: UIKeyEnum.topUI.name,
-      widget: TopUI(uiController: uiController),
+      widget: TopUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       tween: TweenConstant.topSlideTween,
       hideRemove: true,
@@ -148,7 +149,7 @@ class UIState {
     );
     bottomUI = SlideOverlayUIModel(
       name: UIKeyEnum.bottomUI.name,
-      widget: BottomUI(uiController: uiController),
+      widget: BottomUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       tween: TweenConstant.bottomSlideTween,
       hideRemove: false,
@@ -157,7 +158,7 @@ class UIState {
     );
     settingUI = AutoAdjustSlideOverlayUIModel(
       name: UIKeyEnum.settingUI.name,
-      widget: SettingUI(uiController: uiController),
+      widget: SettingUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       hideRemove: true,
       animationDuration: CommonConstant.uIAnimationDuration,
@@ -167,7 +168,7 @@ class UIState {
 
     speedSettingUI = AutoAdjustSlideOverlayUIModel(
       name: UIKeyEnum.speedSettingUI.name,
-      widget: PlaySpeedUI(uiController: uiController),
+      widget: PlaySpeedUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       hideRemove: true,
       animationDuration: CommonConstant.uIAnimationDuration,
@@ -178,7 +179,7 @@ class UIState {
       name: UIKeyEnum.lockCtrUI.name,
       widget: Align(
         alignment: Alignment.centerLeft,
-        child: LockCtrUI(uiController: uiController),
+        child: LockCtrUI(uiViewModel: uiViewModel),
       ),
       useAnimationController: true,
       tween: TweenConstant.leftSlideTween,
@@ -190,7 +191,7 @@ class UIState {
       name: UIKeyEnum.screenshotCtrUI.name,
       widget: Align(
         alignment: Alignment.centerRight,
-        child: ScreenshotUI(uiController: uiController),
+        child: ScreenshotUI(uiViewModel: uiViewModel),
       ),
       useAnimationController: true,
       tween: TweenConstant.rightSlideTween,
@@ -200,7 +201,7 @@ class UIState {
     );
     brightnessUI = OpacityOverlayUIModel(
       name: UIKeyEnum.centerBrightnessUI.name,
-      widget: BrightnessUI(uiController: uiController),
+      widget: BrightnessUI(uiViewModel: uiViewModel),
       useAnimationController: false,
       hideRemove: false,
       tween: TweenConstant.opacityTween,
@@ -208,7 +209,7 @@ class UIState {
 
     volumeUI = OpacityOverlayUIModel(
       name: UIKeyEnum.centerVolumeUI.name,
-      widget: VolumeUI(uiController: uiController),
+      widget: VolumeUI(uiViewModel: uiViewModel),
       useAnimationController: false,
       hideRemove: false,
       tween: TweenConstant.opacityTween,
@@ -216,14 +217,14 @@ class UIState {
 
     centerProgressUI = OpacityOverlayUIModel(
       name: UIKeyEnum.centerProgressUI.name,
-      widget: CenterPlayProgressUI(uiController: uiController),
+      widget: CenterPlayProgressUI(uiViewModel: uiViewModel),
       useAnimationController: false,
       hideRemove: false,
       tween: TweenConstant.opacityTween,
     );
     danmakuSettingUI = AutoAdjustSlideOverlayUIModel(
       name: UIKeyEnum.danmakuSettingUI.name,
-      widget: DanmakuSettingUI(uiController: uiController),
+      widget: DanmakuSettingUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       hideRemove: true,
       animationDuration: CommonConstant.uIAnimationDuration,
@@ -232,7 +233,7 @@ class UIState {
     );
     chapterListUI = AutoAdjustSlideOverlayUIModel(
       name: UIKeyEnum.chapterListUI.name,
-      widget: ChapterListUI(uiController: uiController),
+      widget: ChapterListUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       hideRemove: true,
       animationDuration: CommonConstant.uIAnimationDuration,
@@ -241,7 +242,7 @@ class UIState {
     );
     apiSourceUI = AutoAdjustSlideOverlayUIModel(
       name: UIKeyEnum.apiSourceUI.name,
-      widget: ApiSourceUI(uiController: uiController),
+      widget: ApiSourceUI(uiViewModel: uiViewModel),
       useAnimationController: true,
       hideRemove: true,
       animationDuration: CommonConstant.uIAnimationDuration,
@@ -267,18 +268,21 @@ class UIState {
   }
 
   // 销毁
+  @override
   void dispose() {
     _tickerProviderEffectCleanup?.call();
     tickerProvider.dispose();
     try {
       if (dynamicOverlayUIList.value.isNotEmpty) {
-      for (var element in dynamicOverlayUIList.value) {
-        try {
-          element.dispose();
-        } catch (e) {
-          // ignore: avoid_catches_without_on_clauses
+        // 先获取值的副本，再逐个销毁
+        var elements = List<OverlayUIModel>.from(dynamicOverlayUIList.value);
+        for (var element in elements) {
+          try {
+            element.dispose();
+          } catch (e) {
+            // ignore: avoid_catches_without_on_clauses
+          }
         }
-      }
       }
     } catch (e) {
       // ignore: avoid_catches_without_on_clauses
@@ -286,5 +290,6 @@ class UIState {
     dynamicOverlayUIList.dispose();
     commonUISizeModel.dispose();
     uiSize.dispose();
+    disposed = true;
   }
 }

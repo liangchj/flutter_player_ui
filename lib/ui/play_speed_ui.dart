@@ -6,17 +6,17 @@ import 'package:signals/signals_flutter.dart';
 import '../constant/common_constant.dart';
 import '../constant/key_constant.dart';
 import '../constant/style_constant.dart';
-import '../controller/player_controller.dart';
-import '../controller/ui_controller.dart';
 import '../state/player_state.dart';
 import '../utils/calculate_color_utils.dart';
+import '../view_model/player_view_model.dart';
+import '../view_model/ui_view_model.dart';
 import '../widget/clickable_button_widget.dart';
 
 // 播放倍数ui
 class PlaySpeedUI extends StatefulWidget {
   const PlaySpeedUI({
     super.key,
-    required this.uiController,
+    required this.uiViewModel,
     this.bottomSheet = false,
     this.singleHorizontalScroll = false,
     this.backgroundColor,
@@ -26,7 +26,7 @@ class PlaySpeedUI extends StatefulWidget {
     this.showActivatedBackgroundColor = true,
     this.width,
   });
-  final UIController uiController;
+  final UIViewModel uiViewModel;
   final bool bottomSheet;
   final bool singleHorizontalScroll;
   final Color? backgroundColor;
@@ -41,9 +41,9 @@ class PlaySpeedUI extends StatefulWidget {
 }
 
 class _PlaySpeedUIState extends State<PlaySpeedUI> {
-  UIController get uiController => widget.uiController;
-  PlayerController get playerController => uiController.playerController;
-  PlayerState get playerState => playerController.playerState;
+  UIViewModel get uiViewModel => widget.uiViewModel;
+  PlayerViewModel get playerViewModel => uiViewModel.playerViewModel;
+  PlayerState get playerState => playerViewModel.playerState;
   late final ScrollController _scrollController;
   late ListObserverController _listObserverController;
 
@@ -100,15 +100,15 @@ class _PlaySpeedUIState extends State<PlaySpeedUI> {
         key: Key(KeyConstant.independentPlaySpeedList),
         constraints: BoxConstraints(
           maxHeight:
-              uiController.uiState.commonUISizeModel.value.maxHeight ??
+              uiViewModel.uiState.commonUISizeModel.value.maxHeight ??
               double.infinity,
           maxWidth:
-              uiController.uiState.commonUISizeModel.value.maxWidth ??
+              uiViewModel.uiState.commonUISizeModel.value.maxWidth ??
               double.infinity,
         ),
         child: Container(
-          width: widget.width ?? uiController.uiState.speedUIWidth.value,
-          height: uiController.uiState.commonUISizeModel.value.height,
+          width: widget.width ?? uiViewModel.uiState.speedUIWidth.value,
+          height: uiViewModel.uiState.commonUISizeModel.value.height,
           color: backgroundColor,
           padding: EdgeInsets.all(StyleConstant.safeSpace),
           child: Center(child: _createList()),

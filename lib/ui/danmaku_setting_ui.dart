@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/style_constant.dart';
-import '../controller/my_danmaku_controller.dart';
-import '../controller/ui_controller.dart';
 import '../state/danmaku_state.dart';
 import '../state/ui_state.dart';
+import '../view_model/my_danmaku_view_model.dart';
+import '../view_model/ui_view_model.dart';
 import '../widget/build_text_widget.dart';
 
 class DanmakuSettingUI extends StatefulWidget {
   const DanmakuSettingUI({
     super.key,
-    required this.uiController,
+    required this.uiViewModel,
     this.bottomSheet = false,
   });
-  final UIController uiController;
+  final UIViewModel uiViewModel;
   final bool bottomSheet;
 
   @override
@@ -24,23 +24,22 @@ class DanmakuSettingUI extends StatefulWidget {
 }
 
 class _DanmakuSettingUIState extends State<DanmakuSettingUI> {
-  UIController get uiController => widget.uiController;
+  UIViewModel get uiViewModel => widget.uiViewModel;
 
-  MyDanmakuController get myDanmakuController =>
-      uiController.myDanmakuController;
-  UIState get uiState => uiController.uiState;
+  MyDanmakuViewModel get myDanmakuViewModel => uiViewModel.myDanmakuViewModel;
+  UIState get uiState => uiViewModel.uiState;
 
-  Color get backgroundColor => uiController.backgroundColor;
-  Color get textColor => uiController.textColor;
+  Color get backgroundColor => uiViewModel.backgroundColor;
+  Color get textColor => uiViewModel.textColor;
 
-  Color get activatedTextColor => uiController.activatedTextColor;
+  Color get activatedTextColor => uiViewModel.activatedTextColor;
 
-  Color get buttonColor => uiController.buttonColor;
-  Color get buttonFontColor => uiController.buttonFontColor;
+  Color get buttonColor => uiViewModel.buttonColor;
+  Color get buttonFontColor => uiViewModel.buttonFontColor;
 
   List<Widget> listWidget = [];
 
-  DanmakuState get danmakuState => myDanmakuController.danmakuState;
+  DanmakuState get danmakuState => myDanmakuViewModel.danmakuState;
 
   static const int _leftTextCount = 4;
   static const int _rightTextCount = 4;
@@ -265,17 +264,17 @@ class _DanmakuSettingUIState extends State<DanmakuSettingUI> {
       return ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight:
-              uiController.uiState.commonUISizeModel.value.maxHeight ??
+              uiViewModel.uiState.commonUISizeModel.value.maxHeight ??
               double.infinity,
           maxWidth:
-              uiController.uiState.commonUISizeModel.value.maxWidth ??
+              uiViewModel.uiState.commonUISizeModel.value.maxWidth ??
               double.infinity,
         ),
         child: Container(
           key: ValueKey("danmakuSettingUI"),
           color: backgroundColor,
-          width: uiController.uiState.commonUISizeModel.value.width,
-          height: uiController.uiState.commonUISizeModel.value.height,
+          width: uiViewModel.uiState.commonUISizeModel.value.width,
+          height: uiViewModel.uiState.commonUISizeModel.value.height,
           padding: EdgeInsets.all(StyleConstant.safeSpace),
           child: ListView(children: listWidget),
         ),

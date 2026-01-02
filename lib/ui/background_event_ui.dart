@@ -1,55 +1,54 @@
 import 'package:flutter/material.dart';
 
-import '../controller/ui_controller.dart';
+import '../view_model/ui_view_model.dart';
 
 class BackgroundEventUI extends StatefulWidget {
-  const BackgroundEventUI({super.key, required this.uiController});
-  final UIController uiController;
+  const BackgroundEventUI({super.key, required this.uiViewModel});
+  final UIViewModel uiViewModel;
 
   @override
   State<BackgroundEventUI> createState() => _BackgroundEventUIState();
 }
 
 class _BackgroundEventUIState extends State<BackgroundEventUI> {
-  UIController get uiController => widget.uiController;
+  UIViewModel get uiViewModel => widget.uiViewModel;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => uiController.toggleBackground(),
+      onTap: () => uiViewModel.toggleBackground(),
       onHorizontalDragStart: (DragStartDetails details) {
-        if (!uiController.uiState.uiLocked.value) {
-          uiController.playProgressOnHorizontalDragStart();
+        if (!uiViewModel.uiState.uiLocked.value) {
+          uiViewModel.playProgressOnHorizontalDragStart();
         }
       },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
-        if (!uiController.uiState.uiLocked.value) {
-          uiController.playProgressOnHorizontalDragUpdate(
+        if (!uiViewModel.uiState.uiLocked.value) {
+          uiViewModel.playProgressOnHorizontalDragUpdate(
             context,
             details.delta,
           );
         }
       },
       onHorizontalDragEnd: (DragEndDetails details) {
-        if (!uiController.uiState.uiLocked.value) {
-          uiController.playProgressOnHorizontalDragEnd();
+        if (!uiViewModel.uiState.uiLocked.value) {
+          uiViewModel.playProgressOnHorizontalDragEnd();
         }
       },
       onVerticalDragStart: (DragStartDetails details) {
-        if (!uiController.uiState.uiLocked.value) {
-          uiController.volumeOrBrightnessOnVerticalDragStart(context, details);
+        if (!uiViewModel.uiState.uiLocked.value) {
+          uiViewModel.volumeOrBrightnessOnVerticalDragStart(context, details);
         }
       },
       onVerticalDragUpdate: (DragUpdateDetails details) {
-        if (!uiController.uiState.uiLocked.value) {
-          uiController.volumeOrBrightnessOnVerticalDragUpdate(context, details);
+        if (!uiViewModel.uiState.uiLocked.value) {
+          uiViewModel.volumeOrBrightnessOnVerticalDragUpdate(context, details);
         }
       },
       onVerticalDragEnd: (DragEndDetails details) {
-        if (!uiController.uiState.uiLocked.value) {
-          uiController.volumeOrBrightnessOnVerticalDragEnd();
+        if (!uiViewModel.uiState.uiLocked.value) {
+          uiViewModel.volumeOrBrightnessOnVerticalDragEnd();
         }
       },
     );
   }
 }
-

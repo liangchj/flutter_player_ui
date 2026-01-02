@@ -2,28 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/style_constant.dart';
-import '../controller/player_controller.dart';
-import '../controller/ui_controller.dart';
 import '../state/player_state.dart';
 import '../state/ui_state.dart';
-import '../utils/calculate_color_utils.dart';
+import '../view_model/player_view_model.dart';
+import '../view_model/ui_view_model.dart';
 
 class VolumeUI extends StatefulWidget {
-  const VolumeUI({super.key, required this.uiController});
-  final UIController uiController;
+  const VolumeUI({super.key, required this.uiViewModel});
+  final UIViewModel uiViewModel;
 
   @override
   State<VolumeUI> createState() => _VolumeUIState();
 }
 
 class _VolumeUIState extends State<VolumeUI> {
-  UIController get uiController => widget.uiController;
-  UIState get uiState => uiController.uiState;
-  PlayerController get playerController => uiController.playerController;
+  UIViewModel get uiViewModel => widget.uiViewModel;
+  UIState get uiState => uiViewModel.uiState;
+  PlayerViewModel get playerViewModel => uiViewModel.playerViewModel;
 
-  PlayerState get playerState => playerController.playerState;
-  Color get backgroundColor => uiController.backgroundColor;
-  Color get textColor => uiController.textColor;
+  PlayerState get playerState => playerViewModel.playerState;
+  Color get backgroundColor => uiViewModel.backgroundColor;
+  Color get textColor => uiViewModel.textColor;
 
   @override
   Widget build(BuildContext context) {

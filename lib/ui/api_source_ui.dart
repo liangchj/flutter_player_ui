@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/style_constant.dart';
-import '../controller/ui_controller.dart';
 import '../enum/player_ui_key_enum.dart';
 import '../model/source_option_model.dart';
 import '../state/resource_state.dart';
+import '../view_model/ui_view_model.dart';
 import '../widget/api_widget.dart';
 import '../widget/source_group_widget.dart';
 
 class ApiSourceUI extends StatefulWidget {
   const ApiSourceUI({
     super.key,
-    required this.uiController,
+    required this.uiViewModel,
     this.bottomSheet = false,
   });
-  final UIController uiController;
+  final UIViewModel uiViewModel;
   final bool bottomSheet;
 
   @override
@@ -23,30 +23,29 @@ class ApiSourceUI extends StatefulWidget {
 }
 
 class _ApiSourceUIState extends State<ApiSourceUI> {
-  UIController get uiController => widget.uiController;
-  Color get backgroundColor => uiController.backgroundColor;
-  Color get textColor => uiController.textColor;
-  Color get activatedTextColor => uiController.activatedTextColor;
+  UIViewModel get uiViewModel => widget.uiViewModel;
+  Color get backgroundColor => uiViewModel.backgroundColor;
+  Color get textColor => uiViewModel.textColor;
+  Color get activatedTextColor => uiViewModel.activatedTextColor;
 
-  ResourceState get resourceState =>
-      uiController.playerController.resourceState;
+  ResourceState get resourceState => uiViewModel.playerViewModel.resourceState;
   @override
   Widget build(BuildContext context) {
     return Watch(
       (context) => ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight:
-              uiController.uiState.commonUISizeModel.value.maxHeight ??
+              uiViewModel.uiState.commonUISizeModel.value.maxHeight ??
               double.infinity,
           maxWidth:
-              uiController.uiState.commonUISizeModel.value.maxWidth ??
+              uiViewModel.uiState.commonUISizeModel.value.maxWidth ??
               double.infinity,
         ),
         child: Container(
           key: Key("fullscreenApiSourceUI"),
           color: backgroundColor,
-          width: uiController.uiState.commonUISizeModel.value.width,
-          height: uiController.uiState.commonUISizeModel.value.height,
+          width: uiViewModel.uiState.commonUISizeModel.value.width,
+          height: uiViewModel.uiState.commonUISizeModel.value.height,
           child: Column(
             children: [
               Row(
@@ -55,7 +54,7 @@ class _ApiSourceUIState extends State<ApiSourceUI> {
                   BackButton(
                     color: activatedTextColor,
                     onPressed: () {
-                      uiController.onlyShowUIByKeyList([
+                      uiViewModel.onlyShowUIByKeyList([
                         UIKeyEnum.chapterListUI.name,
                       ]);
                     },
@@ -63,9 +62,7 @@ class _ApiSourceUIState extends State<ApiSourceUI> {
                   CloseButton(
                     color: activatedTextColor,
                     onPressed: () {
-                      uiController.hideUIByKeyList([
-                        UIKeyEnum.apiSourceUI.name,
-                      ]);
+                      uiViewModel.hideUIByKeyList([UIKeyEnum.apiSourceUI.name]);
                     },
                   ),
                 ],
@@ -93,7 +90,7 @@ class _ApiSourceUIState extends State<ApiSourceUI> {
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: TextStyle(
-                color: uiController.textColor,
+                color: uiViewModel.textColor,
                 fontSize: StyleConstant.titleTextSize,
               ),
             ),
@@ -105,7 +102,7 @@ class _ApiSourceUIState extends State<ApiSourceUI> {
             horizontal: StyleConstant.safeSpace,
           ),
           child: ApiWidget(
-            uiController: uiController,
+            uiViewModel: uiViewModel,
             option: SourceOptionModel(singleHorizontalScroll: true),
           ),
         ),
@@ -125,7 +122,7 @@ class _ApiSourceUIState extends State<ApiSourceUI> {
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: TextStyle(
-                color: uiController.textColor,
+                color: uiViewModel.textColor,
                 fontSize: StyleConstant.titleTextSize,
               ),
             ),
@@ -137,7 +134,7 @@ class _ApiSourceUIState extends State<ApiSourceUI> {
             horizontal: StyleConstant.safeSpace,
           ),
           child: SourceGroupWidget(
-            uiController: uiController,
+            uiViewModel: uiViewModel,
             option: SourceOptionModel(singleHorizontalScroll: true),
           ),
         ),

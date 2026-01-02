@@ -1,28 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_player_ui/controller/player_controller.dart';
-import 'package:flutter_player_ui/controller/ui_controller.dart';
 import 'package:signals/signals_flutter.dart';
 
+import '../view_model/player_view_model.dart';
+import '../view_model/ui_view_model.dart';
+
 class PlayerUI extends StatefulWidget {
-  const PlayerUI({super.key, required this.playerController});
-  final PlayerController playerController;
+  const PlayerUI({super.key, required this.playerViewModel});
+  final PlayerViewModel playerViewModel;
 
   @override
   State<PlayerUI> createState() => _PlayerUIState();
 }
 
 class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
-  UIController get uiController => widget.playerController.uiController;
+  UIViewModel get uiViewModel => widget.playerViewModel.uiViewModel;
   @override
   void initState() {
     super.initState();
-    uiController.uiState.tickerProvider.value = this;
-  }
-
-  @override
-  void dispose() {
-    uiController.dispose();
-    super.dispose();
+    uiViewModel.uiState.tickerProvider.value = this;
   }
 
   @override
@@ -31,11 +26,11 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
       child: ClipRect(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            uiController.uiState.uiSize.value = Size(
+            uiViewModel.uiState.uiSize.value = Size(
               constraints.maxWidth,
               constraints.maxHeight,
             );
-            uiController.handleScreenChange(
+            uiViewModel.handleScreenChange(
               Size(constraints.maxWidth, constraints.maxHeight),
             );
             return _ui();
@@ -47,7 +42,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
 
   Widget _ui() {
     return Watch(
-      (context) => uiController.uiState.tickerProvider.value == null
+      (context) => uiViewModel.uiState.tickerProvider.value == null
           ? Container()
           : Stack(
               children: [
@@ -62,7 +57,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                         Container(),
                   ),
                 ),*/
-                ...uiController.uiState.overlayUIList,
+                ...uiViewModel.uiState.overlayUIList,
               ],
             ),
     );

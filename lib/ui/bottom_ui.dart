@@ -2,26 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:signals/signals_flutter.dart';
 import '../constant/style_constant.dart';
-import '../controller/player_controller.dart';
-import '../controller/ui_controller.dart';
 import '../state/player_state.dart';
 import '../state/ui_state.dart';
+import '../view_model/player_view_model.dart';
+import '../view_model/ui_view_model.dart';
 
 class BottomUI extends StatefulWidget {
-  const BottomUI({super.key, required this.uiController});
-  final UIController uiController;
+  const BottomUI({super.key, required this.uiViewModel});
+  final UIViewModel uiViewModel;
 
   @override
   State<BottomUI> createState() => _BottomUIState();
 }
 
 class _BottomUIState extends State<BottomUI> {
-  UIController get uiController => widget.uiController;
-  UIState get uiState => uiController.uiState;
+  UIViewModel get uiViewModel => widget.uiViewModel;
+  UIState get uiState => uiViewModel.uiState;
 
-  PlayerController get playerController => uiController.playerController;
+  PlayerViewModel get playerViewModel => uiViewModel.playerViewModel;
 
-  PlayerState get playerState => playerController.playerState;
+  PlayerState get playerState => playerViewModel.playerState;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -41,13 +41,15 @@ class _BottomUIState extends State<BottomUI> {
           ),
           child: _buildProgressBar(),
         ),
-        Watch((context) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: uiController.fullscreenBottomUIItemList
-              .where((item) => item.visible.value)
-              .map((e) => e.child)
-              .toList(),
-        )),
+        Watch(
+          (context) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: uiViewModel.fullscreenBottomUIItemList
+                .where((item) => item.visible.value)
+                .map((e) => e.child)
+                .toList(),
+          ),
+        ),
       ],
     );
   }
@@ -71,7 +73,7 @@ class _BottomUIState extends State<BottomUI> {
           total: playerState.duration.value,
           buffered: playerState.bufferedDuration.value,
           onDragStart: (details) {
-            // controller.hideTimer?.cancel();
+            // view_model.hideTimer?.cancel();
             playerState.isDragging.value = true;
           },
           onDragEnd: () {

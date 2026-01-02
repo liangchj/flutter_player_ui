@@ -1,4 +1,3 @@
-import 'package:flutter_player_ui/controller/ui_controller.dart';
 import 'package:signals/signals.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -6,11 +5,13 @@ import '../iplayer.dart';
 import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/fullscreen_utils.dart';
+import 'base_view_model.dart';
+import 'ui_view_model.dart';
 
-class PlayerController {
+class PlayerViewModel extends BaseViewModel {
   late final PlayerState playerState;
   late ResourceState resourceState;
-  late final UIController uiController;
+  late final UIViewModel uiViewModel;
   final Signal<IPlayer?> player = signal(null);
   final Signal<bool> playerInitialized = signal(false);
   late FullscreenUtils fullscreenUtils;
@@ -19,14 +20,13 @@ class PlayerController {
   // 标记是否只有全屏页面
   bool onlyFullscreen = false;
   final List<EffectCleanup> _effectCleanupList = [];
-  PlayerController() {
+  PlayerViewModel() {
     playerState = PlayerState();
     resourceState = ResourceState();
-    uiController = UIController(this);
+    uiViewModel = UIViewModel(this);
     fullscreenUtils = FullscreenUtils(this);
     _init();
     _initialized = true;
-
   }
 
   void _init() {
@@ -34,7 +34,7 @@ class PlayerController {
       effect(() {
         if (player.value != null) {
           untracked(() {
-            player.value!.playerController = this;
+            player.value!.playerViewModel = this;
           });
         }
       }),
@@ -112,21 +112,31 @@ class PlayerController {
           "${SettingBoxKey.cachePrev}-${SettingBoxKey.playSpeed}",
           value,
         );*/
-      })
+      }),
     ]);
   }
 
+  @override
   Future<void> dispose() async {
     for (var cleanup in _effectCleanupList) {
       cleanup();
     }
     await stop();
+    if (player.value != null && !player.value!.disposed) {
+      player.value?.dispose();
+    }
     player.dispose();
-    uiController.dispose();
+    playerState.dispose();
+    resourceState.dispose();
+    uiViewModel.dispose();
+    disposed = true;
   }
 
   /// 重置播放状态
   void resetPlayerState() {
+    if (playerState.disposed) {
+      return;
+    }
     playerState.aspectRatio.value = null;
     playerState.videoAspectRatio = null;
     playerState.errorMsg.value = "";
@@ -168,7 +178,9 @@ class PlayerController {
 
   Future<void> stop() async {
     await player.value?.stop();
-    playerState.isPlaying.value = false;
+    if (!playerState.disposed) {
+      playerState.isPlaying.value = false;
+    }
   }
 
   // 暂停或播放
@@ -187,6 +199,9 @@ class PlayerController {
   }
 
   Future<void> seekTo(Duration position) async {
+    if (playerState.disposed) {
+      return;
+    }
     playerState.positionDuration.value = position;
     playerState.isSeeking.value = true;
     playerState.positionDuration.value = position; // 立即更新UI位置
@@ -197,8 +212,13 @@ class PlayerController {
   }
 
   void nextPlay() {
-    resourceState.chapterActivatedIndex.value =
-        resourceState.chapterActivatedIndex.value + 1;
+    if (resourceState.disposed) {
+      return;
+    }
+    if (resourceState.haveNext) {
+      resourceState.chapterActivatedIndex.value =
+          resourceState.chapterActivatedIndex.value + 1;
+    }
   }
 
   Future<void> beforeSeekTo() async {}

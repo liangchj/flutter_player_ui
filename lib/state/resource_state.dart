@@ -7,8 +7,9 @@ import '../model/resource/chapter_model.dart';
 import '../model/resource/resource_model.dart';
 import '../model/resource/resource_state_model.dart';
 import '../model/resource/source_group_model.dart';
+import 'base_state.dart';
 
-class ResourceState {
+class ResourceState extends BaseState {
   ResourceState() {
     _init();
   }
@@ -140,6 +141,7 @@ class ResourceState {
     ]);
   }
 
+  @override
   void dispose() {
     for (var e in _effectCleanupList) {
       e.call();
@@ -151,6 +153,7 @@ class ResourceState {
     resourcePlayingState.dispose();
     resourceModel.dispose();
     chapterList.dispose();
+    disposed = true;
   }
 
   // 点击章节时：将激活状态同步到播放状态

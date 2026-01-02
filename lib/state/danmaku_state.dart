@@ -7,12 +7,13 @@ import '../model/danmaku/danmaku_area_model.dart';
 import '../model/danmaku/danmaku_filter_type_model.dart';
 import '../model/danmaku/danmaku_font_size_model.dart';
 import '../model/danmaku/danmaku_speed_model.dart';
+import 'base_state.dart';
 
-class DanmakuState {
+class DanmakuState extends BaseState {
   // 弹幕组件
-  final Signal<Widget> danmakuView = Signal(Container(
-    color: Colors.transparent,
-  ));
+  final Signal<Widget> danmakuView = Signal(
+    Container(color: Colors.transparent),
+  );
   // 是否启动弹幕
   final Signal<bool> isVisible = signal(true);
 
@@ -104,4 +105,23 @@ class DanmakuState {
       filter: signal(false),
     ),
   ];
+
+  @override
+  void dispose() {
+    danmakuView.dispose();
+    isVisible.dispose();
+    danmakuFilePath.dispose();
+    errorMsg.dispose();
+    isInitialized.dispose();
+    adjustTime.dispose();
+    uiShowAdjustTime.dispose();
+    danmakuAlphaRatio.dispose();
+    danmakuArea.dispose();
+    danmakuFontSize.dispose();
+    danmakuSpeed.dispose();
+    for (var element in danmakuFilterTypeList) {
+      element.filter.dispose();
+    }
+    disposed = true;
+  }
 }

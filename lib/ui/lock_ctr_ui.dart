@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
-import '../controller/ui_controller.dart';
 import '../enum/player_ui_key_enum.dart';
+import '../view_model/ui_view_model.dart';
 
 class LockCtrUI extends StatelessWidget {
-  const LockCtrUI({super.key, required this.uiController});
-  final UIController uiController;
+  const LockCtrUI({super.key, required this.uiViewModel});
+  final UIViewModel uiViewModel;
 
   @override
   Widget build(BuildContext context) {
     return Watch(
       (context) => IconButton(
-        color: uiController.textColor,
+        color: uiViewModel.textColor,
         onPressed: () {
-          uiController.uiState.uiLocked.value =
-              !uiController.uiState.uiLocked.value;
-          if (uiController.uiState.uiLocked.value) {
-            uiController.onlyShowUIByKeyList([UIKeyEnum.lockCtrUI.name]);
+          uiViewModel.uiState.uiLocked.value =
+              !uiViewModel.uiState.uiLocked.value;
+          if (uiViewModel.uiState.uiLocked.value) {
+            uiViewModel.onlyShowUIByKeyList([UIKeyEnum.lockCtrUI.name]);
           } else {
-            uiController.onlyShowUIByKeyList(
-              uiController.uiState.touchBackgroundShowUIKeyList,
+            uiViewModel.onlyShowUIByKeyList(
+              uiViewModel.uiState.touchBackgroundShowUIKeyList,
             );
           }
         },
@@ -29,7 +29,7 @@ class LockCtrUI extends StatelessWidget {
           ),
         ),
         icon: Icon(
-          uiController.uiState.uiLocked.value
+          uiViewModel.uiState.uiLocked.value
               ? Icons.lock_clock_rounded
               : Icons.lock_open_rounded,
         ),

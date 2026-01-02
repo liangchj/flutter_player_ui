@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/style_constant.dart';
-import '../controller/ui_controller.dart';
 import '../enum/player_ui_key_enum.dart';
 import '../model/source_option_model.dart';
 import '../state/resource_state.dart';
+import '../view_model/ui_view_model.dart';
 import '../widget/chapter_list_widget.dart';
 
 class ChapterListUI extends StatefulWidget {
   const ChapterListUI({
     super.key,
-    required this.uiController,
+    required this.uiViewModel,
     this.bottomSheet = false,
   });
-  final UIController uiController;
+  final UIViewModel uiViewModel;
   final bool bottomSheet;
 
   @override
@@ -24,10 +24,9 @@ class ChapterListUI extends StatefulWidget {
 }
 
 class _ChapterListUIState extends State<ChapterListUI> {
-  UIController get uiController => widget.uiController;
+  UIViewModel get uiViewModel => widget.uiViewModel;
 
-  ResourceState get resourceState =>
-      uiController.playerController.resourceState;
+  ResourceState get resourceState => uiViewModel.playerViewModel.resourceState;
   String get apiName =>
       resourceState.activatedApi?.api?.name ??
       resourceState.activatedApi?.api?.enName ??
@@ -43,17 +42,17 @@ class _ChapterListUIState extends State<ChapterListUI> {
       return ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight:
-              uiController.uiState.commonUISizeModel.value.maxHeight ??
+              uiViewModel.uiState.commonUISizeModel.value.maxHeight ??
               double.infinity,
           maxWidth:
-              uiController.uiState.commonUISizeModel.value.maxWidth ??
+              uiViewModel.uiState.commonUISizeModel.value.maxWidth ??
               double.infinity,
         ),
         child: Container(
           key: ValueKey("chapterListUI"),
-          color: uiController.backgroundColor,
-          width: uiController.uiState.commonUISizeModel.value.width,
-          height: uiController.uiState.commonUISizeModel.value.height,
+          color: uiViewModel.backgroundColor,
+          width: uiViewModel.uiState.commonUISizeModel.value.width,
+          height: uiViewModel.uiState.commonUISizeModel.value.height,
           padding: EdgeInsetsGeometry.symmetric(
             vertical: StyleConstant.safeSpace / 2,
           ),
@@ -85,7 +84,7 @@ class _ChapterListUIState extends State<ChapterListUI> {
               _createHeader(),
               Expanded(
                 child: ChapterListWidget(
-                  uiController: uiController,
+                  uiViewModel: uiViewModel,
                   option: SourceOptionModel(
                     isGrid: true,
                     // singleHorizontalScroll: true,
@@ -124,14 +123,14 @@ class _ChapterListUIState extends State<ChapterListUI> {
                     Text(
                       "资源：",
                       style: TextStyle(
-                        color: uiController.textColor,
+                        color: uiViewModel.textColor,
                         fontSize: StyleConstant.titleTextSize,
                       ),
                     ),
                     // 总共能够显示12个字
                     InkWell(
                       onTap: () {
-                        uiController.onlyShowUIByKeyList([
+                        uiViewModel.onlyShowUIByKeyList([
                           UIKeyEnum.apiSourceUI.name,
                         ]);
                       },
@@ -152,7 +151,7 @@ class _ChapterListUIState extends State<ChapterListUI> {
                                       maxLines: 1,
                                       textAlign: TextAlign.end,
                                       style: TextStyle(
-                                        color: uiController.textColor,
+                                        color: uiViewModel.textColor,
                                         fontSize: StyleConstant.titleTextSize,
                                       ),
                                     ),
@@ -165,7 +164,7 @@ class _ChapterListUIState extends State<ChapterListUI> {
                                 ? Text(
                                     " - ",
                                     style: TextStyle(
-                                      color: uiController.textColor,
+                                      color: uiViewModel.textColor,
                                       fontSize: StyleConstant.titleTextSize,
                                     ),
                                   )
@@ -184,7 +183,7 @@ class _ChapterListUIState extends State<ChapterListUI> {
                                       maxLines: 1,
                                       textAlign: TextAlign.start,
                                       style: TextStyle(
-                                        color: uiController.textColor,
+                                        color: uiViewModel.textColor,
                                         fontSize: StyleConstant.titleTextSize,
                                       ),
                                     ),
@@ -227,25 +226,25 @@ class _ChapterListUIState extends State<ChapterListUI> {
                   children: [
                     Watch(
                       (context) => Text(
-                        "章节(${uiController.playerController.resourceState.activatedChapterCount})：",
+                        "章节(${uiViewModel.playerViewModel.resourceState.activatedChapterCount})：",
                         style: TextStyle(
-                          color: uiController.textColor,
+                          color: uiViewModel.textColor,
                           fontSize: StyleConstant.titleTextSize,
                         ),
                       ),
                     ),
                     IconButton(
                       tooltip:
-                          uiController
-                              .playerController
+                          uiViewModel
+                              .playerViewModel
                               .resourceState
                               .chapterAsc
                               .value
                           ? "正序"
                           : "倒叙",
                       icon:
-                          uiController
-                              .playerController
+                          uiViewModel
+                              .playerViewModel
                               .resourceState
                               .chapterAsc
                               .value
@@ -255,12 +254,12 @@ class _ChapterListUIState extends State<ChapterListUI> {
                         padding: WidgetStateProperty.all(EdgeInsets.zero),
                       ),
                       onPressed: () {
-                        uiController
-                            .playerController
+                        uiViewModel
+                            .playerViewModel
                             .resourceState
                             .chapterAsc
-                            .value = !uiController
-                            .playerController
+                            .value = !uiViewModel
+                            .playerViewModel
                             .resourceState
                             .chapterAsc
                             .value;

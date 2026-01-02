@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../controller/ui_controller.dart';
+import '../view_model/ui_view_model.dart';
 
 class ScreenshotUI extends StatelessWidget {
-  const ScreenshotUI({super.key, required this.uiController});
-  final UIController uiController;
+  const ScreenshotUI({super.key, required this.uiViewModel});
+  final UIViewModel uiViewModel;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      color: uiController.textColor,
+      color: uiViewModel.textColor,
       onPressed: () {},
       style: ButtonStyle(
         backgroundColor: WidgetStateProperty.all(

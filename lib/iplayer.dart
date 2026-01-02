@@ -1,9 +1,9 @@
-import 'controller/player_controller.dart';
+import 'flutter_player_ui.dart';
 
 abstract class IPlayer {
-  PlayerController? playerController;
+  PlayerViewModel? playerViewModel;
 
-  IPlayer({this.playerController});
+  IPlayer({this.playerViewModel});
   // 播放器初始化
   Future<void> onInitPlayer();
 
@@ -31,7 +31,15 @@ abstract class IPlayer {
 
   void changeVideoUrl({bool autoPlay = true});
 
-  IPlayer copyWith({
-    PlayerController? playerController,
-  });
+  IPlayer copyWith({PlayerViewModel? playerViewModel});
+
+  bool disposed = false;
+
+  bool get playerViewModelDisposed => playerViewModel?.disposed ?? true;
+  bool get playerStateDisposed => playerViewModel?.playerState.disposed ?? true;
+  bool get resourceDisposed => playerViewModel?.resourceState.disposed ?? true;
+
+  bool get uiViewModelDisposed => playerViewModel?.uiViewModel.disposed ?? true;
+  bool get uiStateDisposed =>
+      playerViewModel?.uiViewModel.uiState.disposed ?? true;
 }
