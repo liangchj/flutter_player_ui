@@ -118,23 +118,32 @@ class UIViewModel extends BaseViewModel {
         type: ControlType.next,
         fixedWidth: StyleConstant.bottomBtnSize,
         priority: 2,
-        child: IconButton(
+        /*child: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           color: StyleConstant.iconColor,
           onPressed: () => playerViewModel.nextPlay(),
           icon: IconConstant.nextPlayIcon,
-        ),
-        /*child: Obx(
-              () => resourcePlayState.haveNext
-              ? IconButton(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            color: StyleConstant.iconColor,
-            // onPressed: () => nextPlay(),
-            onPressed: () => {},
-            icon: IconCommons.nextPlayIcon,
+        ),*/
+        child: Watch(
+              (context) => playerViewModel.resourceState.playingChapterCount > 1
+              ? Tooltip(
+            message: playerViewModel.resourceState.haveNext
+                ? "下一个视频"
+                : "已经是最后一个视频", // 提示文本
+            child: IconButton(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              color: playerViewModel.resourceState.haveNext
+                  ? StyleConstant.iconColor
+                  : Colors.grey.shade400, // 置灰效果
+              onPressed: playerViewModel.resourceState.haveNext
+                  ? () => playerViewModel.nextPlay()
+                  : null, // 禁用时设为 null
+              icon: IconConstant.nextPlayIcon,
+              enableFeedback: !playerViewModel.resourceState.haveNext, // 禁用反馈
+            ),
           )
               : Container(),
-        ),*/
+        ),
         visible: Signal(true),
       ),
       /*BottomUIItemModel(
@@ -223,26 +232,27 @@ class UIViewModel extends BaseViewModel {
         type: ControlType.chapter,
         fixedWidth: StyleConstant.bottomBtnSize,
         priority: 4,
-        child: IconButton(
+        /*child: IconButton(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           color: StyleConstant.iconColor,
           onPressed: () => {
             onlyShowUIByKeyList([UIKeyEnum.chapterListUI.name]),
           },
           icon: Icon(Icons.list),
-        ),
-        /*child: Obx(
-              () => resourcePlayState.activatedChapterList.length > 1
-              ? IconButton(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            color: WidgetStyleCommons.iconColor,
-            onPressed: () => {
-              onlyShowUIByKeyList([PlayerUIKeyEnum.chapterListUI.name]),
-            },
-            icon: Icon(Icons.list),
-          )
-              : Container(),
         ),*/
+        child: Watch(
+          (context) =>
+              playerViewModel.resourceState.activatedChapterList.length > 1
+              ? IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  color: StyleConstant.iconColor,
+                  onPressed: () => {
+                    onlyShowUIByKeyList([UIKeyEnum.chapterListUI.name]),
+                  },
+                  icon: Icon(Icons.list),
+                )
+              : Container(),
+        ),
         visible: Signal(true),
       ),
       BottomUIItemModel(

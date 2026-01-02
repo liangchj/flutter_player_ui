@@ -59,9 +59,17 @@ class _ChapterListUIState extends State<ChapterListUI> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsets.only(bottom: StyleConstant.safeSpace),
-                child: _createApiSource(),
+              Watch(
+                (context) =>
+                    resourceState.apiCount > 0 ||
+                        resourceState.activatedApiSourceGroupCount > 0
+                    ? Padding(
+                        padding: EdgeInsets.only(
+                          bottom: StyleConstant.safeSpace,
+                        ),
+                        child: _createApiSource(),
+                      )
+                    : Container(),
               ),
               // 添加分割线
               Container(

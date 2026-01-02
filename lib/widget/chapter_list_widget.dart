@@ -109,6 +109,9 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
   @override
   Widget build(BuildContext context) {
     return Watch((context) {
+      if (!resourceState.chapterListLoaded.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
       if (chapterCount <= 1) {
         return Container();
       }

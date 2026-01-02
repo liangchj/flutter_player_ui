@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:signals/signals_flutter.dart';
 import '../constant/style_constant.dart';
 import '../enum/player_ui_key_enum.dart';
 import '../utils/calculate_color_utils.dart';
@@ -31,11 +32,13 @@ class _TopUIState extends State<TopUI> {
           ),
           // 标题
           Expanded(
-            child: Text(
-              "标题",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: _color),
+            child: Watch(
+              (context) => Text(
+                "${uiViewModel.playerViewModel.resourceState.playingChapter?.name}",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: _color),
+              ),
             ),
             /*child: Obx(
                   () => Text(

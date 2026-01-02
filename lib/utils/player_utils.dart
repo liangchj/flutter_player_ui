@@ -14,6 +14,7 @@ class PlayerUtils {
     ResourceModel? resourceModel,
     List<ChapterModel>? chapterList,
     Function(PlayerViewModel)? playerViewModelCallback,
+    bool chapterListLoaded = true,
   }) {
     PlayerViewModel? viewModel = player?.playerViewModel;
     Navigator.push(
@@ -50,6 +51,19 @@ class PlayerUtils {
           ),
         ),
       ),
+    );
+  }
+
+  static void appendResourceAndUpdateLoadingState(
+    bool loaded,
+    PlayerViewModel playerViewModel, {
+    ResourceModel? resourceModel,
+    List<ChapterModel>? chapterList,
+  }) {
+    playerViewModel.resourceState.appendResourceAndUpdateLoadingState(
+      loaded,
+      resourceModel: resourceModel,
+      chapterList: chapterList,
     );
   }
 }

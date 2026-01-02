@@ -17,6 +17,10 @@ class ResourceState extends BaseState {
   // 章节排序
   final Signal<bool> chapterAsc = signal(true);
 
+  final Signal<bool> chapterListLoaded = signal(false);
+
+  int appendChapterListCount = 0;
+
   // 激活状态（当前展示的索引，用于UI高亮）
   final Signal<int> apiActivatedIndex = signal(-1);
   final Signal<int> apiGroupActivatedIndex = signal(-1);
@@ -55,34 +59,122 @@ class ResourceState extends BaseState {
         if (resource == null && chapters == null) {
           return;
         }
-        // 使用 untracked 避免内部赋值引起重复触发
-        untracked(() {
-          resourcePlayingState.value = resourcePlayingState.value.copyWith(
-            apiIndex: resourcePlayingState.value.apiIndex < 0
-                ? 0
-                : resourcePlayingState.value.apiIndex,
-            apiGroupIndex: resourcePlayingState.value.apiGroupIndex < 0
-                ? 0
-                : resourcePlayingState.value.apiGroupIndex,
-            chapterGroupIndex: resourcePlayingState.value.chapterGroupIndex < 0
-                ? 0
-                : resourcePlayingState.value.chapterGroupIndex,
-            chapterIndex: resourcePlayingState.value.chapterIndex < 0
-                ? 0
-                : resourcePlayingState.value.chapterIndex,
+
+        ResourceStateModel firstState = ResourceStateModel(
+          apiIndex: -1,
+          apiGroupIndex: -1,
+          chapterGroupIndex: -1,
+          chapterIndex: -1,
+        );
+        ResourceStateModel activeState = ResourceStateModel(
+          apiIndex: -1,
+          apiGroupIndex: -1,
+          chapterGroupIndex: -1,
+          chapterIndex: -1,
+        );
+        if (resource != null &&
+            resource.apiList != null &&
+            resource.apiList!.isNotEmpty) {
+          var apiList = resource.apiList;
+          if (apiList == null || apiList.isEmpty) {
+            return;
+          }
+
+          for (int apiIndex = 0; apiIndex < apiList.length; apiIndex++) {
+            var item = apiList[apiIndex];
+            var sourceGroupList = item.sourceGroupList;
+            if (sourceGroupList.isEmpty) {
+              continue;
+            }
+
+            if (firstState.apiIndex < 0) {
+              firstState = firstState.copyWith(
+                apiIndex: apiIndex,
+                apiGroupIndex: -1,
+                chapterGroupIndex: -1,
+                chapterIndex: -1,
+              );
+            }
+
+            for (
+              int apiGroupIndex = 0;
+              apiGroupIndex < sourceGroupList.length;
+              apiGroupIndex++
+            ) {
+              var sourceGroup = sourceGroupList[apiGroupIndex];
+              if (sourceGroup.chapterList.isEmpty) {
+                continue;
+              }
+              if (firstState.apiGroupIndex < 0) {
+                firstState = firstState.copyWith(
+                  apiIndex: apiIndex,
+                  apiGroupIndex: apiGroupIndex,
+                  chapterGroupIndex: -1,
+                  chapterIndex: -1,
+                );
+              }
+              for (
+                int chapterIndex = 0;
+                chapterIndex < sourceGroup.chapterList.length;
+                chapterIndex++
+              ) {
+                if (firstState.chapterIndex < 0) {
+                  firstState = firstState.copyWith(
+                    apiIndex: apiIndex,
+                    apiGroupIndex: apiGroupIndex,
+                    chapterGroupIndex: 0,
+                    chapterIndex: chapterIndex,
+                  );
+                }
+                if (sourceGroup.chapterList[chapterIndex].activated) {
+                  // 激活的章节
+                  activeState = activeState.copyWith(
+                    apiIndex: apiIndex,
+                    apiGroupIndex: apiGroupIndex,
+                    chapterGroupIndex: chapterGroupIndex(
+                      chapterIndex,
+                      sourceGroup.chapterList,
+                    ),
+                    chapterIndex: chapterIndex,
+                  );
+                  break;
+                }
+              }
+              if (activeState.chapterIndex >= 0) {
+                break;
+              }
+            }
+            if (activeState.chapterIndex >= 0) {
+              break;
+            }
+          }
+        } else {
+          int index = -1;
+          if (chapters != null) {
+            for (int i = 0; i < chapters.length; i++) {
+              var item = chapters[i];
+              if (item.activated) {
+                index = i;
+                break;
+              }
+            }
+          }
+          activeState = activeState.copyWith(
+            apiIndex: -1,
+            apiGroupIndex: -1,
+            chapterGroupIndex: -1,
+            chapterIndex: index,
           );
-          _apiToApiGroupCache[resourcePlayingState.value.apiIndex] =
-              resourcePlayingState.value.apiGroupIndex;
-          _apiGroupToChapterGroupCache["${resourcePlayingState.value.apiIndex}-${resourcePlayingState.value.apiGroupIndex}"] =
-              resourcePlayingState.value.chapterGroupIndex;
-          _chapterGroupToChapterCache["${resourcePlayingState.value.apiIndex}-${resourcePlayingState.value.apiGroupIndex}-${resourcePlayingState.value.chapterGroupIndex}"] =
-              resourcePlayingState.value.chapterIndex;
-          apiActivatedIndex.value = resourcePlayingState.value.apiIndex;
-          apiGroupActivatedIndex.value =
-              resourcePlayingState.value.apiGroupIndex;
-          chapterGroupActivatedIndex.value =
-              resourcePlayingState.value.chapterGroupIndex;
-          chapterActivatedIndex.value = resourcePlayingState.value.chapterIndex;
+        }
+        // 没有激活的章节就默认第一个
+        if (activeState.chapterIndex < 0) {
+          activeState = firstState;
+        }
+        untracked(() {
+          apiActivatedIndex.value = activeState.apiIndex;
+          apiGroupActivatedIndex.value = activeState.apiGroupIndex;
+          chapterGroupActivatedIndex.value = activeState.chapterGroupIndex;
+          chapterActivatedIndex.value = activeState.chapterIndex;
         });
       }),
       // 监听api激活情况
@@ -278,6 +370,18 @@ class ResourceState extends BaseState {
     return list;
   }
 
+  // 根据章节下标和章节列表获取章节组下标
+  int chapterGroupIndex(int chapterIndex, List<ChapterModel> chapterList) {
+    // 验证输入参数
+    if (chapterList.isEmpty ||
+        chapterIndex < 0 ||
+        chapterIndex >= chapterList.length) {
+      return -1;
+    }
+    // 直接计算章节组索引
+    return (chapterIndex / StyleConstant.chapterGroupCount).floor();
+  }
+
   // 章节组
   // 播放api和资源组下的章节组
   List<ChapterGroupModel> get playingChapterGroupList {
@@ -400,5 +504,18 @@ class ResourceState extends BaseState {
     apiGroupActivatedIndex.value = resourcePlayingState.value.apiGroupIndex;
     chapterGroupActivatedIndex.value =
         resourcePlayingState.value.chapterGroupIndex;
+  }
+
+
+  void appendResourceAndUpdateLoadingState(bool loaded,
+      {ResourceModel? resourceModel, List<ChapterModel>? chapterList}) {
+    appendChapterListCount++;
+    if (resourceModel != null) {
+      this.resourceModel.value = resourceModel;
+    }
+    if (chapterList != null) {
+      this.chapterList.value = chapterList;
+    }
+    chapterListLoaded.value = true;
   }
 }

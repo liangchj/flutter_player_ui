@@ -68,6 +68,10 @@ class PlayerViewModel extends BaseViewModel {
       // 监听切换视频
       effect(() {
         var resourceStateModel = resourceState.resourcePlayingState.value;
+        if (resourceState.appendChapterListCount > 0) {
+          resourceState.appendChapterListCount = 0;
+          return;
+        }
         if (resourceStateModel.chapterIndex < 0) {
           return;
         }
@@ -218,6 +222,7 @@ class PlayerViewModel extends BaseViewModel {
     if (resourceState.haveNext) {
       resourceState.chapterActivatedIndex.value =
           resourceState.chapterActivatedIndex.value + 1;
+      uiViewModel.cancelAndRestartTimer();
     }
   }
 
