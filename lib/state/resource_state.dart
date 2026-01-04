@@ -257,7 +257,6 @@ class ResourceState extends BaseState {
         chapterGroupIndex: chapterGroupActivatedIndex.value,
         chapterIndex: chapterActivatedIndex.value,
       );
-
       _apiToApiGroupCache.clear();
       _apiToApiGroupCache[apiActivatedIndex.value] =
           apiGroupActivatedIndex.value;
@@ -475,6 +474,9 @@ class ResourceState extends BaseState {
     if (chapterIndex < 0) {
       return -1;
     }
+    if (resourcePlayingState.value.chapterGroupIndex < 0) {
+      return chapterIndex;
+    }
     // 因为chapterGroupIndex从0开始，因此不需要先减1再计算
     return chapterIndex -
         (resourcePlayingState.value.chapterGroupIndex *
@@ -487,7 +489,9 @@ class ResourceState extends BaseState {
     if (chapterIndex < 0) {
       return -1;
     }
-
+    if (resourcePlayingState.value.chapterGroupIndex < 0) {
+      return chapterIndex;
+    }
     // 因为chapterGroupIndex从0开始，因此不需要先减1再计算
     return chapterIndex -
         (resourcePlayingState.value.chapterGroupIndex *
