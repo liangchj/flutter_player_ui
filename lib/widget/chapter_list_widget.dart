@@ -1,9 +1,7 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:signals/signals_flutter.dart';
-
 import '../constant/style_constant.dart';
 import '../model/resource/chapter_model.dart';
 import '../model/source_option_model.dart';
@@ -52,51 +50,76 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
 
   bool _showBottomSheet = false;
 
-  EffectCleanup? _effectCleanup;
+  List<EffectCleanup> _effectCleanups = [];
+
+  int initialIndex = 0;
 
   @override
   void initState() {
+    var chapterListLoaded = resourceState.chapterListLoaded.value;
     _activatedIndex = resourceState.playingChapterGroupToChapterIndex;
-    int initialIndex = _activatedIndex > 0 ? _activatedIndex : 0;
+    initialIndex = _activatedIndex > 0 ? _activatedIndex : 0;
     _scrollController = ScrollController();
-    if (option.isGrid) {
-      _gridObserverController = GridObserverController(
-        controller: _scrollController,
-      )..initialIndex = initialIndex;
-    } else {
-      _observerController = ListObserverController(
-        controller: _scrollController,
-      )..initialIndex = initialIndex;
-    }
 
-    _effectCleanup = effect(() {
-      int apiActivatedIndex = resourceState.apiActivatedIndex.value;
-      int apiGroupActivatedIndex = resourceState.apiGroupActivatedIndex.value;
-      int chapterGroupActivatedIndex =
-          resourceState.chapterGroupActivatedIndex.value;
-      untracked(() {
-        // int index = resourceState.playingChapterGroupToChapterIndex;
-        int index = resourceState.activatedChapterGroupToChapterIndex;
-        if (index == 0 && !resourceState.chapterAsc.value) {
-          index = resourceState.activatedChapterGroupList.length;
-        }
-        if (index < 0) {
-          index = 0;
-        }
-        print("跳转到章节索引: $index");
-        if (!_showBottomSheet) {
-          _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
-          _observerController?.jumpTo(index: index, isFixedHeight: true);
-        }
-      });
-    });
+    _effectCleanups.addAll([
+      if (!chapterListLoaded)
+        effect(() {
+          var loaded = resourceState.chapterListLoaded.value;
+          if (loaded) {
+            untracked(() {
+              _activatedIndex = resourceState.playingChapterGroupToChapterIndex;
+              initialIndex = _activatedIndex > 0 ? _activatedIndex : 0;
+              if (!_showBottomSheet) {
+                if (_gridObserverController == null &&
+                    _observerController == null) {
+                  _initObserverController();
+                }
+                _gridObserverController?.jumpTo(
+                  index: initialIndex,
+                  isFixedHeight: true,
+                );
+                _observerController?.jumpTo(
+                  index: initialIndex,
+                  isFixedHeight: true,
+                );
+              }
+            });
+          }
+        }),
+      effect(() {
+        int apiActivatedIndex = resourceState.apiActivatedIndex.value;
+        int apiGroupActivatedIndex = resourceState.apiGroupActivatedIndex.value;
+        int chapterGroupActivatedIndex =
+            resourceState.chapterGroupActivatedIndex.value;
+        untracked(() {
+          // int index = resourceState.playingChapterGroupToChapterIndex;
+          int index = resourceState.activatedChapterGroupToChapterIndex;
+          if (index == 0 && !resourceState.chapterAsc.value) {
+            index = resourceState.activatedChapterGroupList.length;
+          }
+          if (index < 0) {
+            index = 0;
+          }
+          if (!_showBottomSheet) {
+            if (_gridObserverController == null &&
+                _observerController == null) {
+              _initObserverController();
+            }
+            _gridObserverController?.jumpTo(index: index, isFixedHeight: true);
+            _observerController?.jumpTo(index: index, isFixedHeight: true);
+          }
+        });
+      }),
+    ]);
 
     super.initState();
   }
 
   @override
   void dispose() {
-    _effectCleanup?.call();
+    for (var element in _effectCleanups) {
+      element.call();
+    }
     int index = resourceState.playingChapterGroupToChapterIndex;
     index = index >= 0 ? index : 0;
     if (_scrollController != null && index != _activatedIndex) {
@@ -104,6 +127,34 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
     }
     _scrollController?.dispose();
     super.dispose();
+  }
+
+  void _initObserverController() {
+    if (option.isGrid && resourceState.maxChapterTitleLen < 8) {
+      _initGridObserverController();
+    } else {
+      _initListObserverController();
+    }
+  }
+
+  void _initGridObserverController() {
+    if (_gridObserverController == null) {
+      _gridObserverController = GridObserverController(
+        controller: _scrollController,
+      )..initialIndex = initialIndex;
+    } else {
+      _gridObserverController?.initialIndex = initialIndex;
+    }
+  }
+
+  void _initListObserverController() {
+    if (_observerController == null) {
+      _observerController = ListObserverController(
+        controller: _scrollController,
+      )..initialIndex = initialIndex;
+    } else {
+      _observerController?.initialIndex = initialIndex;
+    }
   }
 
   @override
@@ -145,16 +196,20 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
               color: Colors.grey.withValues(alpha: 0.5),
             ),
           ),
-          option.bottomSheet
-              ? _bottomSheetList(context)
-              : option.singleHorizontalScroll
-              ? Padding(
-                  padding: EdgeInsetsGeometry.symmetric(
-                    vertical: StyleConstant.safeSpace,
-                  ),
-                  child: _horizontalScroll(context),
-                )
-              : _list(context),
+          Watch(
+            (context) => resourceState.chapterListLoaded.value
+                ? option.bottomSheet
+                      ? _bottomSheetList(context)
+                      : option.singleHorizontalScroll
+                      ? Padding(
+                          padding: EdgeInsetsGeometry.symmetric(
+                            vertical: StyleConstant.safeSpace,
+                          ),
+                          child: _horizontalScroll(context),
+                        )
+                      : _list(context)
+                : Text("列表加载中...", style: TextStyle(color: textColor),),
+          ),
         ],
       );
     });
@@ -185,6 +240,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
 
   // 列表方式
   Widget _listView(BuildContext context) {
+    _initListObserverController();
     return Watch((context) {
       var list = resourceState.chapterAsc.value
           ? chapterList
@@ -242,6 +298,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
 
   // 列表方式（grid）
   Widget _gridView(BuildContext context) {
+    _initGridObserverController();
     return Watch((context) {
       var list = resourceState.chapterAsc.value
           ? chapterList
