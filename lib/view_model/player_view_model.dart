@@ -1,7 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter_player_ui/player_data_storage.dart';
 import 'package:signals/signals.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../constant/common_constant.dart';
 import '../iplayer.dart';
+import '../model/storage/play_history_model.dart';
 import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/fullscreen_utils.dart';
@@ -20,6 +25,13 @@ class PlayerViewModel extends BaseViewModel {
   // 标记是否只有全屏页面
   bool onlyFullscreen = false;
   final List<EffectCleanup> _effectCleanupList = [];
+
+  PlayerDataStorage? dataStorage;
+
+  // 历史记录定时器
+  Timer? _historyRecordTimer;
+  Duration startPlayDuration = Duration.zero;
+
   PlayerViewModel() {
     playerState = PlayerState();
     resourceState = ResourceState();
@@ -29,7 +41,12 @@ class PlayerViewModel extends BaseViewModel {
     _initialized = true;
   }
 
-  void _init() {
+  void _init() async {
+    double? playSpeed = await dataStorage?.getSetting("playSpeed");
+    if (playSpeed != null) {
+      playerState.playSpeed.value = playSpeed;
+    }
+
     _effectCleanupList.addAll([
       effect(() {
         if (player.value != null) {
@@ -92,15 +109,15 @@ class PlayerViewModel extends BaseViewModel {
         untracked(() {
           if (isPlaying) {
             // 开始播放时启动定时器
-            // _startHistoryRecordTimer();
+            _startHistoryRecordTimer();
 
             // 播放时保持屏幕唤醒
             WakelockPlus.enable();
             // myDanmakuController.resumeDanmaku();
           } else {
             // 暂停时停止定时器并立即记录一次
-            // _stopHistoryRecordTimer();
-            // _recordPlayHistory();
+            _stopHistoryRecordTimer();
+            _recordPlayHistory();
 
             // 暂停时关闭保持屏幕唤醒
             WakelockPlus.disable();
@@ -112,16 +129,17 @@ class PlayerViewModel extends BaseViewModel {
       effect(() {
         var value = playerState.playSpeed.value;
         player.value?.setPlaySpeed(value);
-        /*GStorage.setting.put(
-          "${SettingBoxKey.cachePrev}-${SettingBoxKey.playSpeed}",
-          value,
-        );*/
+        dataStorage?.saveSetting("playSpeed", value);
       }),
     ]);
   }
 
   @override
   Future<void> dispose() async {
+    // 应用退出前记录一次播放历史
+    _recordPlayHistory();
+    // 停止定时器
+    _stopHistoryRecordTimer();
     for (var cleanup in _effectCleanupList) {
       cleanup();
     }
@@ -134,6 +152,76 @@ class PlayerViewModel extends BaseViewModel {
     resourceState.dispose();
     uiViewModel.dispose();
     disposed = true;
+  }
+
+  void _startHistoryRecordTimer() {
+    _stopHistoryRecordTimer(); // 先停止已有的定时器
+    _historyRecordTimer = Timer.periodic(
+      Duration(seconds: CommonConstant.historyRecordInterval),
+          (timer) {
+        _recordPlayHistory();
+      },
+    );
+  }
+
+  void _stopHistoryRecordTimer() {
+    _historyRecordTimer?.cancel();
+    _historyRecordTimer = null;
+  }
+
+  // 记录播放历史
+  void _recordPlayHistory() {
+    // 检查是否满足最小播放时间要求
+    if (playerState.positionDuration.value.inSeconds -
+            startPlayDuration.inSeconds <
+        CommonConstant.minPlayTimeForHistory) {
+      return;
+    }
+
+    // 检查播放器是否已初始化且没有错误
+    if (!playerState.isInitialized.value || playerState.errorMsg.isNotEmpty) {
+      return;
+    }
+
+    // 记录播放历史到数据库或本地存储
+    _savePlayHistoryToStorage();
+  }
+
+  // 保存播放历史到存储
+  void _savePlayHistoryToStorage() {
+    // 根据当前播放的视频信息和播放位置保存历史记录
+    resourceState.playingChapter?.historyDuration =
+        playerState.positionDuration.value;
+
+    String id = "";
+    String? apiKey;
+    String? sourceGroupKey;
+    late PlayHistoryModel historyModel;
+    if (resourceState.resourceModel.value == null) {
+      id = resourceState.playingChapter?.playUrl ?? "";
+    } else {
+      if (resourceState.playingApi != null) {
+        apiKey = resourceState.playingApi!.api?.enName;
+
+        if (resourceState.playingSourceGroup != null) {
+          sourceGroupKey = resourceState.playingSourceGroup!.enName;
+        } else {
+          sourceGroupKey = apiKey;
+        }
+      }
+    }
+    historyModel = PlayHistoryModel(
+      id: id,
+      apiKey: apiKey,
+      sourceGroupKey: sourceGroupKey,
+      chapterUrl: resourceState.playingChapter?.playUrl ?? "",
+      chapterIndex: resourceState.resourcePlayingState.value.chapterIndex,
+      chapterName: resourceState.playingChapter?.name ?? "",
+      durationInMilli: playerState.duration.value.inMilliseconds,
+      positionInMilli: playerState.positionDuration.value.inMilliseconds,
+      time: DateTime.now(),
+    );
+    dataStorage?.savePlayHistory(historyModel.key, historyModel);
   }
 
   /// 重置播放状态
@@ -166,8 +254,49 @@ class PlayerViewModel extends BaseViewModel {
 
   Future<void> changeVideoUrl({bool autoPlay = true}) async {
     await stop();
-    resetPlayerState();
+
+    _beforeChangeVideoUrl();
+    
     player.value?.changeVideoUrl(autoPlay: autoPlay);
+  }
+  
+  void _beforeChangeVideoUrl() async {
+    // 视频切换前记录上一个视频的历史
+    _recordPlayHistory();
+    // 停止当前定时器
+    _stopHistoryRecordTimer();
+    // 重置状态
+    resetPlayerState();
+    // 清空上一个视频播放起始位置
+    startPlayDuration = Duration.zero;
+    // 从缓存中读取新视频开始播放位置
+    int historyPosition = 0;
+    String videoKey = "";
+    if (resourceState.resourceModel.value == null) {
+      videoKey = resourceState.playingChapter?.playUrl ?? "";
+    } else {
+      String videoId = resourceState.resourceModel.value!.id;
+      String apiKey = resourceState.playingApi!.api?.enName ?? "";
+      String? sourceGroupKey;
+      if (resourceState.playingSourceGroup != null) {
+        sourceGroupKey = resourceState.playingSourceGroup!.enName;
+      } else {
+        sourceGroupKey = apiKey;
+      }
+      videoKey = 'id:${videoId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
+    }
+    if (videoKey.isNotEmpty) {
+      var playHistory = await dataStorage?.getPlayHistory(videoKey);
+      if (playHistory != null) {
+        historyPosition = playHistory.positionInMilli;
+        resourceState.playingChapter?.historyDuration = Duration(
+          milliseconds: historyPosition,
+        );
+        resourceState.playingChapter?.start = Duration(
+          milliseconds: historyPosition,
+        );
+      }
+    }
   }
 
   // 视频播放

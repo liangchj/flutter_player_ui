@@ -6,7 +6,8 @@ class ResourceModel {
   // 名称
   final String name;
   final String? enName;
+  final String url;
   List<ApiModel>? apiList;
 
-  ResourceModel({required this.id, required this.name, this.enName, this.apiList});
+  ResourceModel({required this.id, required this.name, this.enName, required this.url, this.apiList});
 }

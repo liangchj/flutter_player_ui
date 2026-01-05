@@ -29,4 +29,8 @@ class CommonConstant {
   // 音量和亮度ui显示时长
   static const Duration volumeOrBrightnessUIShowDuration =
   Duration(milliseconds: 1000);
+
+
+  static const int historyRecordInterval = 15; // 15秒记录一次
+  static const int minPlayTimeForHistory = 5; // 至少播放5秒才记录
 }
