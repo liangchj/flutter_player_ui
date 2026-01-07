@@ -1,7 +1,7 @@
 class PlayHistoryModel {
   // 本地视频为播放地址
   // 网络视频为资源id
-  final String id;
+  final String resourceId;
   final String? apiKey;
   final String? sourceGroupKey;
   // 章节地址（有些网站基础地址可能会变）
@@ -14,9 +14,9 @@ class PlayHistoryModel {
   final DateTime time;
 
   PlayHistoryModel({
-    required this.id,
-    required this.apiKey,
-    required this.sourceGroupKey,
+    required this.resourceId,
+    this.apiKey,
+    this.sourceGroupKey,
     required this.chapterUrl,
     required this.chapterIndex,
     required this.chapterName,
@@ -28,6 +28,20 @@ class PlayHistoryModel {
   double get progress => positionInMilli / durationInMilli;
 
   String get key => apiKey == null
-      ? id
-      : 'id:${id}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
+      ? resourceId
+      : 'resourceId:${resourceId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
+
+  Map<String, dynamic> toJson() {
+    return {
+      'resourceId': resourceId,
+      'apiKey': apiKey,
+      'sourceGroupKey': sourceGroupKey,
+      'chapterUrl': chapterUrl,
+      'chapterIndex': chapterIndex,
+      'chapterName': chapterName,
+      'durationInMilli': durationInMilli,
+      'positionInMilli': positionInMilli,
+      'time': time.millisecondsSinceEpoch,
+    };
+  }
 }

@@ -211,7 +211,7 @@ class PlayerViewModel extends BaseViewModel {
       }
     }
     historyModel = PlayHistoryModel(
-      id: id,
+      resourceId: id,
       apiKey: apiKey,
       sourceGroupKey: sourceGroupKey,
       chapterUrl: resourceState.playingChapter?.playUrl ?? "",
@@ -283,7 +283,7 @@ class PlayerViewModel extends BaseViewModel {
       } else {
         sourceGroupKey = apiKey;
       }
-      videoKey = 'id:${videoId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
+      videoKey = 'resourceId:${videoId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
     }
     if (videoKey.isNotEmpty) {
       var playHistory = await dataStorage?.getPlayHistory(videoKey);
