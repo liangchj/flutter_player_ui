@@ -24,32 +24,34 @@ class _CenterPlayProgressUIState extends State<CenterPlayProgressUI> {
 
   @override
   Widget build(BuildContext context) {
-    return UnconstrainedBox(
-      child: Container(
-        width: StyleConstant.playProgressUISize.width,
-        height: StyleConstant.playProgressUISize.height,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          //设置四周圆角 角度
-          borderRadius: const BorderRadius.all(
-            Radius.circular(StyleConstant.borderRadius),
+    return Center(
+      child: UnconstrainedBox(
+        child: Container(
+          width: StyleConstant.playProgressUISize.width,
+          height: StyleConstant.playProgressUISize.height,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            //设置四周圆角 角度
+            borderRadius: const BorderRadius.all(
+              Radius.circular(StyleConstant.borderRadius),
+            ),
           ),
-        ),
-        child: Watch(
-          (context) => Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "${TimeFormatUtils.durationToMinuteAndSecond(Duration(seconds: playerState.draggingSecond.value.abs() > 0 ? playerState.dragProgressPositionDuration.inSeconds + playerState.draggingSecond.value : 0))}/${TimeFormatUtils.durationToMinuteAndSecond(playerState.duration.value)}",
-                style: TextStyle(color: textColor),
-              ),
-              const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
-              Text(
-                "${playerState.draggingSecond}秒",
-                style: TextStyle(color: textColor),
-              ),
-            ],
+          child: Watch(
+            (context) => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "${TimeFormatUtils.durationToMinuteAndSecond(Duration(seconds: playerState.draggingSecond.value.abs() > 0 ? playerState.dragProgressPositionDuration.inSeconds + playerState.draggingSecond.value : 0))}/${TimeFormatUtils.durationToMinuteAndSecond(playerState.duration.value)}",
+                  style: TextStyle(color: textColor),
+                ),
+                const Padding(padding: EdgeInsets.symmetric(vertical: 4)),
+                Text(
+                  "${playerState.draggingSecond}秒",
+                  style: TextStyle(color: textColor),
+                ),
+              ],
+            ),
           ),
         ),
       ),

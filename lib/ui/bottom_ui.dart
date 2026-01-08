@@ -73,17 +73,18 @@ class _BottomUIState extends State<BottomUI> {
           total: playerState.duration.value,
           buffered: playerState.bufferedDuration.value,
           onDragStart: (details) {
-            // view_model.hideTimer?.cancel();
+            uiViewModel.cancelHideTimer();
             playerState.isDragging.value = true;
           },
           onDragEnd: () {
+            uiViewModel.cancelAndRestartTimer();
             playerState.isDragging.value = false;
           },
           onDragUpdate: (details) {
             // LoggerUtils.logger.d("进度条改变事件");
           },
           onSeek: (details) {
-            // playerGetxController.seekTo(Duration(seconds: details.inSeconds));
+            playerViewModel.seekTo(Duration(seconds: details.inSeconds));
           },
         ),
       );

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_volume_controller/flutter_volume_controller.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 import 'package:signals/signals_flutter.dart';
 
 import '../constant/common_constant.dart';
@@ -125,23 +127,24 @@ class UIViewModel extends BaseViewModel {
           icon: IconConstant.nextPlayIcon,
         ),*/
         child: Watch(
-              (context) => playerViewModel.resourceState.playingChapterCount > 1
+          (context) => playerViewModel.resourceState.playingChapterCount > 1
               ? Tooltip(
-            message: playerViewModel.resourceState.haveNext
-                ? "下一个视频"
-                : "已经是最后一个视频", // 提示文本
-            child: IconButton(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              color: playerViewModel.resourceState.haveNext
-                  ? StyleConstant.iconColor
-                  : Colors.grey.shade400, // 置灰效果
-              onPressed: playerViewModel.resourceState.haveNext
-                  ? () => playerViewModel.nextPlay()
-                  : null, // 禁用时设为 null
-              icon: IconConstant.nextPlayIcon,
-              enableFeedback: !playerViewModel.resourceState.haveNext, // 禁用反馈
-            ),
-          )
+                  message: playerViewModel.resourceState.haveNext
+                      ? "下一个视频"
+                      : "已经是最后一个视频", // 提示文本
+                  child: IconButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    color: playerViewModel.resourceState.haveNext
+                        ? StyleConstant.iconColor
+                        : Colors.grey.shade400, // 置灰效果
+                    onPressed: playerViewModel.resourceState.haveNext
+                        ? () => playerViewModel.nextPlay()
+                        : null, // 禁用时设为 null
+                    icon: IconConstant.nextPlayIcon,
+                    enableFeedback:
+                        !playerViewModel.resourceState.haveNext, // 禁用反馈
+                  ),
+                )
               : Container(),
         ),
         visible: Signal(true),
@@ -633,18 +636,18 @@ class UIViewModel extends BaseViewModel {
     double width = MediaQuery.of(context).size.width;
     String showUIKey;
     if (details.globalPosition.dx > (width / 2)) {
-      /*FlutterVolumeController.updateShowSystemUI(false);
+      FlutterVolumeController.updateShowSystemUI(false);
       FlutterVolumeController.getVolume().then(
             (value) => playerState.volume.value = ((value ?? 0) * 100).floor(),
-      );*/
+      );
       playerState.isVolumeDragging.value = true;
       showUIKey = UIKeyEnum.centerVolumeUI.name;
       hideUIByKeyList([UIKeyEnum.centerBrightnessUI.name]);
     } else {
       // 获取当前亮度
-      /*ScreenBrightness.instance.application.then(
-            (value) => playerState.brightness((value * 100).floor()),
-      );*/
+      ScreenBrightness.instance.application.then(
+        (value) => playerState.brightness.value = (value * 100).floor(),
+      );
       playerState.isBrightnessDragging.value = true;
       showUIKey = UIKeyEnum.centerBrightnessUI.name;
       hideUIByKeyList([UIKeyEnum.centerVolumeUI.name]);
@@ -677,17 +680,17 @@ class UIViewModel extends BaseViewModel {
         0,
         100,
       );
-      // FlutterVolumeController.updateShowSystemUI(false);
-      // FlutterVolumeController.setVolume(playerState.volume / 100.0);
+      FlutterVolumeController.updateShowSystemUI(false);
+      FlutterVolumeController.setVolume(playerState.volume / 100.0);
       showUIKey = UIKeyEnum.centerVolumeUI.name;
       hideUIByKeyList([UIKeyEnum.centerBrightnessUI.name]);
     } else if (playerState.isBrightnessDragging.value) {
       // 设置亮度
       playerState.brightness.value = (playerState.brightness.value - dragValue)
           .clamp(0, 100);
-      // ScreenBrightness.instance.setApplicationScreenBrightness(
-      //   playerState.brightness / 100.0,
-      // );
+      ScreenBrightness.instance.setApplicationScreenBrightness(
+        playerState.brightness / 100.0,
+      );
       showUIKey = UIKeyEnum.centerBrightnessUI.name;
       hideUIByKeyList([UIKeyEnum.centerVolumeUI.name]);
     }
