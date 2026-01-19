@@ -19,7 +19,12 @@ class ResourceState extends BaseState {
 
   final Signal<bool> chapterListLoaded = signal(false);
 
-  int appendChapterListCount = 0;
+  ResourceStateModel prevResourceState = ResourceStateModel(
+    apiIndex: -1,
+    apiGroupIndex: -1,
+    chapterGroupIndex: -1,
+    chapterIndex: -1,
+  );
 
   // 激活状态（当前展示的索引，用于UI高亮）
   final Signal<int> apiActivatedIndex = signal(-1);
@@ -510,10 +515,11 @@ class ResourceState extends BaseState {
         resourcePlayingState.value.chapterGroupIndex;
   }
 
-
-  void appendResourceAndUpdateLoadingState(bool loaded,
-      {ResourceModel? resourceModel, List<ChapterModel>? chapterList}) {
-    appendChapterListCount++;
+  void appendResourceAndUpdateLoadingState(
+    bool loaded, {
+    ResourceModel? resourceModel,
+    List<ChapterModel>? chapterList,
+  }) {
     if (resourceModel != null) {
       this.resourceModel.value = resourceModel;
     }

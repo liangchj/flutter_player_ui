@@ -43,4 +43,10 @@ class ResourceStateModel {
       apiGroupIndex.hashCode ^
       chapterGroupIndex.hashCode ^
       chapterIndex.hashCode;
+
+  bool valueEquals(ResourceStateModel other) =>
+      apiIndex == other.apiIndex &&
+      apiGroupIndex == other.apiGroupIndex &&
+      chapterGroupIndex == other.chapterGroupIndex &&
+      chapterIndex == other.chapterIndex;
 }

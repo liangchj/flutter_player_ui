@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_player_ui/player_data_storage.dart';
 import 'package:signals/signals.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -85,10 +86,10 @@ class PlayerViewModel extends BaseViewModel {
       // 监听切换视频
       effect(() {
         var resourceStateModel = resourceState.resourcePlayingState.value;
-        if (resourceState.appendChapterListCount > 0) {
-          resourceState.appendChapterListCount = 0;
+        if (resourceState.prevResourceState.valueEquals(resourceStateModel)) {
           return;
         }
+        resourceState.prevResourceState = resourceStateModel;
         if (resourceStateModel.chapterIndex < 0) {
           return;
         }
@@ -158,7 +159,7 @@ class PlayerViewModel extends BaseViewModel {
     _stopHistoryRecordTimer(); // 先停止已有的定时器
     _historyRecordTimer = Timer.periodic(
       Duration(seconds: CommonConstant.historyRecordInterval),
-          (timer) {
+      (timer) {
         _recordPlayHistory();
       },
     );
@@ -255,11 +256,15 @@ class PlayerViewModel extends BaseViewModel {
   Future<void> changeVideoUrl({bool autoPlay = true}) async {
     await stop();
 
+    await Future(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {});
+    });
+
     _beforeChangeVideoUrl();
-    
+
     player.value?.changeVideoUrl(autoPlay: autoPlay);
   }
-  
+
   void _beforeChangeVideoUrl() async {
     // 视频切换前记录上一个视频的历史
     _recordPlayHistory();
@@ -283,7 +288,8 @@ class PlayerViewModel extends BaseViewModel {
       } else {
         sourceGroupKey = apiKey;
       }
-      videoKey = 'resourceId:${videoId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
+      videoKey =
+          'resourceId:${videoId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
     }
     if (videoKey.isNotEmpty) {
       var playHistory = await dataStorage?.getPlayHistory(videoKey);
