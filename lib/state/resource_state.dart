@@ -54,6 +54,8 @@ class ResourceState extends BaseState {
 
   List<EffectCleanup> _effectCleanupList = [];
 
+  bool isAppendResourceAndUpdateLoadingState = false;
+
   void _init() {
     _effectCleanupList.addAll([
       // 监听资源和章节列表变化
@@ -174,6 +176,10 @@ class ResourceState extends BaseState {
         // 没有激活的章节就默认第一个
         if (activeState.chapterIndex < 0) {
           activeState = firstState;
+        }
+        if (isAppendResourceAndUpdateLoadingState) {
+          prevResourceState = activeState.copyWith();
+          isAppendResourceAndUpdateLoadingState = false;
         }
         untracked(() {
           apiActivatedIndex.value = activeState.apiIndex;
@@ -520,6 +526,7 @@ class ResourceState extends BaseState {
     ResourceModel? resourceModel,
     List<ChapterModel>? chapterList,
   }) {
+    isAppendResourceAndUpdateLoadingState = true;
     if (resourceModel != null) {
       this.resourceModel.value = resourceModel;
     }
