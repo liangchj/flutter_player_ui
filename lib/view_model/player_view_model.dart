@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_player_ui/player_data_storage.dart';
+import 'package:flutter_player_ui/interface/player_data_storage.dart';
 import 'package:signals/signals.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../constant/common_constant.dart';
-import '../iplayer.dart';
+import '../interface/iplayer.dart';
 import '../model/storage/play_history_model.dart';
 import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/fullscreen_utils.dart';
 import 'base_view_model.dart';
+import 'my_danmaku_view_model.dart';
 import 'ui_view_model.dart';
 
 class PlayerViewModel extends BaseViewModel {
@@ -21,6 +22,7 @@ class PlayerViewModel extends BaseViewModel {
   final Signal<IPlayer?> player = signal(null);
   final Signal<bool> playerInitialized = signal(false);
   late FullscreenUtils fullscreenUtils;
+  late MyDanmakuViewModel myDanmakuViewModel;
   bool _initialized = false;
   bool get initialized => _initialized;
   // 标记是否只有全屏页面
@@ -38,6 +40,7 @@ class PlayerViewModel extends BaseViewModel {
     resourceState = ResourceState();
     uiViewModel = UIViewModel(this);
     fullscreenUtils = FullscreenUtils(this);
+    myDanmakuViewModel = MyDanmakuViewModel(uiViewModel: uiViewModel);
     _init();
     _initialized = true;
   }
@@ -263,9 +266,13 @@ class PlayerViewModel extends BaseViewModel {
     _beforeChangeVideoUrl();
 
     player.value?.changeVideoUrl(autoPlay: autoPlay);
+    myDanmakuViewModel.afterChangeVideoUrl(autoPlay);
   }
 
   void _beforeChangeVideoUrl() async {
+    // 停止弹幕
+    myDanmakuViewModel.beforeChangeVideoUrl();
+
     // 视频切换前记录上一个视频的历史
     _recordPlayHistory();
     // 停止当前定时器

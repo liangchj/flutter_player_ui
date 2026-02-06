@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
-import 'iplayer.dart';
+import 'interface/iplayer.dart';
 import 'ui/player_ui.dart';
 import 'view_model/player_view_model.dart';
 

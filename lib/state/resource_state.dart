@@ -56,6 +56,9 @@ class ResourceState extends BaseState {
 
   bool isAppendResourceAndUpdateLoadingState = false;
 
+  // 弹幕文件路径
+  final Signal<String> danmakuFilePath = signal("");
+
   void _init() {
     _effectCleanupList.addAll([
       // 监听资源和章节列表变化
@@ -256,6 +259,7 @@ class ResourceState extends BaseState {
     resourcePlayingState.dispose();
     resourceModel.dispose();
     chapterList.dispose();
+    danmakuFilePath.dispose();
     disposed = true;
   }
 
@@ -277,6 +281,7 @@ class ResourceState extends BaseState {
       _chapterGroupToChapterCache.clear();
       _chapterGroupToChapterCache["${apiActivatedIndex.value}-${apiGroupActivatedIndex.value}-${chapterGroupActivatedIndex.value}"] =
           chapterActivatedIndex.value;
+      danmakuFilePath.value = playingChapter?.danmakuPath ?? "";
     });
   }
 

@@ -1,4 +1,4 @@
-import 'model/storage/play_history_model.dart';
+import '../model/storage/play_history_model.dart';
 
 abstract class PlayerDataStorage {
   // 设置

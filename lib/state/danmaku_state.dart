@@ -17,9 +17,6 @@ class DanmakuState extends BaseState {
   // 是否启动弹幕
   final Signal<bool> isVisible = signal(true);
 
-  // 弹幕文件路径
-  final Signal<String> danmakuFilePath = signal("");
-
   // 错误信息
   final Signal<String> errorMsg = signal("");
 
@@ -110,7 +107,7 @@ class DanmakuState extends BaseState {
   void dispose() {
     danmakuView.dispose();
     isVisible.dispose();
-    danmakuFilePath.dispose();
+
     errorMsg.dispose();
     isInitialized.dispose();
     adjustTime.dispose();

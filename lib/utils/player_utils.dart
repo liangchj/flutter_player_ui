@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../iplayer.dart';
+import '../interface/iplayer.dart';
 import '../model/resource/chapter_model.dart';
 import '../model/resource/resource_model.dart';
 import '../player_view.dart';

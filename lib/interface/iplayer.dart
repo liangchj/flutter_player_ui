@@ -1,4 +1,4 @@
-import 'flutter_player_ui.dart';
+import '../flutter_player_ui.dart';
 
 abstract class IPlayer {
   PlayerViewModel? playerViewModel;
