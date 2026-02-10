@@ -46,17 +46,13 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
           ? Container()
           : Stack(
               children: [
-                /*Positioned.fill(
+                Positioned.fill(
                   child: Watch(
                     (context) =>
-                        uiController
-                            .myDanmakuController
-                            .danmakuState
-                            .danmakuView
-                            .value ??
+                        uiViewModel.danmakuState.danmakuView.value ??
                         Container(),
                   ),
-                ),*/
+                ),
                 ...uiViewModel.uiState.overlayUIList,
               ],
             ),

@@ -100,7 +100,15 @@ class BiliDanmakuParser extends BaseDanmakuParser {
                 danmakuItem.extra == null) {
               continue;
             }
-            int time = int.parse(danmakuItem.extra!);
+            int? time;
+            if (danmakuItem.extra is int) {
+              time = danmakuItem.extra as int;
+            } else {
+              time = int.tryParse(danmakuItem.extra!.toString());
+            }
+            if (time == null) {
+              continue;
+            }
             int timeGroup =
                 (time ~/ _options.intervalTime) * _options.intervalTime;
             var list = groupDanmakuMap[timeGroup] ?? [];
@@ -116,7 +124,15 @@ class BiliDanmakuParser extends BaseDanmakuParser {
               danmakuItem.extra == null) {
             continue;
           }
-          int time = int.parse(danmakuItem.extra!);
+          int? time;
+          if (danmakuItem.extra is int) {
+            time = danmakuItem.extra as int;
+          } else {
+            time = int.tryParse(danmakuItem.extra!.toString());
+          }
+          if (time == null) {
+            continue;
+          }
           int timeGroup =
               (time ~/ _options.intervalTime) * _options.intervalTime;
           var list = groupDanmakuMap[timeGroup] ?? [];

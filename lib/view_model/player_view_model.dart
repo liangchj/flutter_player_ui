@@ -40,7 +40,8 @@ class PlayerViewModel extends BaseViewModel {
     resourceState = ResourceState();
     uiViewModel = UIViewModel(this);
     fullscreenUtils = FullscreenUtils(this);
-    myDanmakuViewModel = MyDanmakuViewModel(uiViewModel: uiViewModel);
+    // myDanmakuViewModel = MyDanmakuViewModel(playerViewModel: this);
+    myDanmakuViewModel = uiViewModel.myDanmakuViewModel;
     _init();
     _initialized = true;
   }
@@ -50,7 +51,6 @@ class PlayerViewModel extends BaseViewModel {
     if (playSpeed != null) {
       playerState.playSpeed.value = playSpeed;
     }
-
     _effectCleanupList.addAll([
       effect(() {
         if (player.value != null) {
@@ -67,24 +67,29 @@ class PlayerViewModel extends BaseViewModel {
       }),
       // 监听播放器初始化
       effect(() {
-        if (!playerState.isInitialized.value) {
-          untracked(() {
+        var value = playerState.isInitialized.value;
+        untracked(() {
+          if (value) {
+            resourceState.danmakuFilePath.value =
+                resourceState.playingChapter?.danmakuPath ?? "";
+          } else {
             playerState.isPlaying.value = false;
             playerState.isBuffering.value = false;
-          });
-        }
+          }
+        });
       }),
       // 监听播放完成
       effect(() {
-        if (playerState.isFinished.value) {
-          untracked(() {
+        var flag = playerState.isFinished.value;
+        untracked(() async {
+          if (flag) {
             playerState.isPlaying.value = false;
             playerState.isBuffering.value = false;
             if (resourceState.haveNext) {
               nextPlay();
             }
-          });
-        }
+          }
+        });
       }),
       // 监听切换视频
       effect(() {
@@ -117,7 +122,7 @@ class PlayerViewModel extends BaseViewModel {
 
             // 播放时保持屏幕唤醒
             WakelockPlus.enable();
-            // myDanmakuController.resumeDanmaku();
+            myDanmakuViewModel.resumeDanmaku();
           } else {
             // 暂停时停止定时器并立即记录一次
             _stopHistoryRecordTimer();
@@ -125,7 +130,7 @@ class PlayerViewModel extends BaseViewModel {
 
             // 暂停时关闭保持屏幕唤醒
             WakelockPlus.disable();
-            // myDanmakuController.pauseDanmaku();
+            myDanmakuViewModel.pauseDanmaku();
           }
         });
       }),
@@ -152,9 +157,10 @@ class PlayerViewModel extends BaseViewModel {
       player.value?.dispose();
     }
     player.dispose();
-    playerState.dispose();
-    resourceState.dispose();
+    myDanmakuViewModel.dispose();
     uiViewModel.dispose();
+    resourceState.dispose();
+    playerState.dispose();
     disposed = true;
   }
 
@@ -351,10 +357,11 @@ class PlayerViewModel extends BaseViewModel {
     playerState.positionDuration.value = position;
     playerState.isSeeking.value = true;
     playerState.positionDuration.value = position; // 立即更新UI位置
-    // myDanmakuController.seekToDanmaku(position.inMilliseconds);
     await player.value?.seekTo(position);
     playerState.beforeSeekToIsPlaying = false;
     playerState.isSeeking.value = false;
+    // 清空幕布中的弹幕，避免因跳转时间导致弹幕重复
+    myDanmakuViewModel.clearDanmaku();
   }
 
   void nextPlay() {

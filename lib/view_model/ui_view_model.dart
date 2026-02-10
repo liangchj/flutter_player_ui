@@ -21,7 +21,8 @@ import 'player_view_model.dart';
 
 class UIViewModel extends BaseViewModel {
   final PlayerViewModel playerViewModel;
-  MyDanmakuViewModel get myDanmakuViewModel => playerViewModel.myDanmakuViewModel;
+  // MyDanmakuViewModel get myDanmakuViewModel => playerViewModel.myDanmakuViewModel;
+  late MyDanmakuViewModel myDanmakuViewModel;
   late UIState uiState;
   DanmakuState get danmakuState => myDanmakuViewModel.danmakuState;
   List<BottomUIItemModel> fullscreenBottomUIItemList = [];
@@ -42,6 +43,7 @@ class UIViewModel extends BaseViewModel {
   PlayerState get playerState => playerViewModel.playerState;
   UIViewModel(this.playerViewModel) {
     uiState = UIState(this);
+    myDanmakuViewModel = MyDanmakuViewModel(uiViewModel: this);
     // myDanmakuViewModel = MyDanmakuViewModel(uiViewModel: this);
     _initBottomControlItemList(textColor);
     _initEffect();

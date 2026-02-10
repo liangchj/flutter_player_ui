@@ -281,7 +281,9 @@ class ResourceState extends BaseState {
       _chapterGroupToChapterCache.clear();
       _chapterGroupToChapterCache["${apiActivatedIndex.value}-${apiGroupActivatedIndex.value}-${chapterGroupActivatedIndex.value}"] =
           chapterActivatedIndex.value;
-      danmakuFilePath.value = playingChapter?.danmakuPath ?? "";
+      // 改为播放器解析完成后再赋值
+      // danmakuFilePath.value = playingChapter?.danmakuPath ?? "";
+      danmakuFilePath.value = "";
     });
   }
 

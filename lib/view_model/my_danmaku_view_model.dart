@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:canvas_danmaku/danmaku_controller.dart';
@@ -6,7 +7,6 @@ import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:canvas_danmaku/models/danmaku_option.dart';
 import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
-
 import '../constant/key_constant.dart';
 import '../danmaku_parser/base_danmaku_parser.dart';
 import '../danmaku_parser/bili_danmaku_parser.dart';
@@ -27,7 +27,11 @@ class MyDanmakuViewModel extends BaseViewModel {
 
   late DanmakuState danmakuState;
 
-  bool get videoIsPlaying => playerViewModel.playerState.isPlaying.value;
+  bool get videoIsPlaying =>
+      !playerViewModel.disposed &&
+      !playerViewModel.playerState.disposed &&
+      !playerViewModel.playerState.isPlaying.disposed &&
+      playerViewModel.playerState.isPlaying.value;
 
   Color get textColor => uiViewModel.textColor;
   Color get activatedTextColor => uiViewModel.activatedTextColor;
@@ -45,7 +49,10 @@ class MyDanmakuViewModel extends BaseViewModel {
   bool _processingDanmakuList = false;
   bool _timeAddDanmakuIsRunning = false;
 
+  Completer<void>? _initializingCompleter;
+
   final List<EffectCleanup> _effectCleanupList = [];
+
   void _init() {
     danmakuState = DanmakuState();
     _effectCleanupList.addAll([
@@ -88,7 +95,9 @@ class MyDanmakuViewModel extends BaseViewModel {
       effect(() {
         var value = playerViewModel.resourceState.danmakuFilePath.value;
         untracked(() {
-          parseDanmakuFile();
+          if (value.isNotEmpty) {
+            parseDanmakuFile();
+          }
         });
       }),
     ]);
@@ -209,6 +218,10 @@ class MyDanmakuViewModel extends BaseViewModel {
     );
   }
 
+  void updateOptions() {
+    danmakuController?.updateOption(getDanmakuOption());
+  }
+
   DanmakuOption getDanmakuOption() {
     bool hideScroll = false;
     bool hideTop = false;
@@ -259,23 +272,55 @@ class MyDanmakuViewModel extends BaseViewModel {
 
   // 初始化弹幕
   Future<void> initDanmaku() async {
+    // 如果正在初始化，则等待初始化完成
+    if (_initializingCompleter != null) {
+      return _initializingCompleter!.future;
+    }
+
+    // 标记为正在初始化
+    _initializingCompleter = Completer<void>();
+
+    try {
+      final completer = Completer<void>();
+      danmakuState.danmakuView.value = DanmakuScreen(
+        createdController: (DanmakuController e) {
+          danmakuController = e;
+          completer.complete();
+        },
+        option: getDanmakuOption(),
+      );
+      await completer.future;
+      startDanmakuProcessing();
+    } finally {
+      // 初始化完成，重置状态
+      _initializingCompleter?.complete();
+      _initializingCompleter = null;
+    }
+    /*final completer = Completer<void>(); // 创建 Completer
     danmakuState.danmakuView.value = DanmakuScreen(
       createdController: (DanmakuController e) {
         danmakuController = e;
-        if (playerViewModel.resourceState.danmakuFilePath.value.isNotEmpty) {
-          parseDanmakuFile();
-        }
+        completer.complete();
       },
       option: getDanmakuOption(),
     );
-    _processDanmakuList();
-    return Future.value();
+    await completer.future;
+    startDanmakuProcessing();
+    return Future.value();*/
   }
 
   // 解析弹幕文件
-  void parseDanmakuFile({BaseDanmakuParser? parser, bool parseStart = true}) {
+  Future<void> parseDanmakuFile({
+    BaseDanmakuParser? parser,
+    bool parseStart = true,
+  }) async {
+    if (disposed) return;
     if (playerViewModel.resourceState.danmakuFilePath.value.isEmpty) {
       return;
+    }
+    if (danmakuController == null &&
+        danmakuState.danmakuView.value is! DanmakuScreen) {
+      await initDanmaku();
     }
     parser ??= BiliDanmakuParser(
       options: BiliDanmakuParseOptions(
@@ -288,8 +333,9 @@ class MyDanmakuViewModel extends BaseViewModel {
     );
     parser.stateController.stream.listen((event) {
       if (event.status == ParserStatus.completed) {
-        if (parseStart) {
-          startDanmaku();
+        // 解析完成后，根据条件决定是否启动弹幕播放
+        if (parseStart && videoIsPlaying && danmakuState.isVisible.value) {
+          startDanmakuProcessing(); // 启动弹幕处理循环
         }
       }
     });
@@ -299,21 +345,20 @@ class MyDanmakuViewModel extends BaseViewModel {
     );
   }
 
-  void updateOptions() {
-    danmakuController?.updateOption(getDanmakuOption());
-  }
-
   // 启动弹幕
   Future<void> startDanmaku() async {
     if (!videoIsPlaying || !danmakuState.isVisible.value) {
       return Future.value();
     }
-    if (danmakuController == null) {
+    if (danmakuController == null &&
+        danmakuState.danmakuView.value is! DanmakuScreen) {
       await initDanmaku();
     }
+
     if (!danmakuController!.running) {
       danmakuController?.resume();
     }
+    startDanmakuProcessing(); // 启动弹幕处理循环
   }
 
   // 恢复弹幕
@@ -325,6 +370,7 @@ class MyDanmakuViewModel extends BaseViewModel {
       return;
     }
     danmakuController?.resume();
+    startDanmakuProcessing();
   }
 
   // 暂停弹幕
@@ -333,7 +379,7 @@ class MyDanmakuViewModel extends BaseViewModel {
       return;
     }
     try {
-      danmakuController!.pause();
+      danmakuController?.pause();
       _processingDanmakuList = false;
     } catch (_) {}
   }
@@ -372,54 +418,107 @@ class MyDanmakuViewModel extends BaseViewModel {
   }*/
 
   void addDanmaku(List<DanmakuContentItem> danmakuList) {
+    if (danmakuController == null || disposed) return;
     try {
       for (var danmaku in danmakuList) {
-        danmakuController!.addDanmaku(danmaku);
+        danmakuController?.addDanmaku(danmaku);
       }
     } catch (_) {}
   }
 
-  Future<void> _processDanmakuList() async {
-    if (_processingDanmakuList || danmakuController == null) {
+  // 启动弹幕播放逻辑
+  Future<void> startDanmakuProcessing() async {
+    if (_processingDanmakuList ||
+        danmakuController == null ||
+        !danmakuController!.running) {
       return;
     }
+
+    // 只有在视频播放且弹幕可见时才启动处理循环
+    if (!danmakuState.isVisible.value) {
+      return;
+    }
+
+    if (!videoIsPlaying) {
+      return;
+    }
+
     if (_timeAddDanmakuIsRunning) {
       _processingDanmakuList = false;
       return;
     }
     _processingDanmakuList = true;
-    while (playerViewModel.playerState.isPlaying.value &&
+    await _processDanmakuList();
+  }
+
+  Future<void> _processDanmakuList() async {
+    int prevStartTime = 0; // 上一次循环开始的时间戳
+    while (!disposed &&
+        videoIsPlaying &&
+        danmakuController != null &&
         danmakuController!.running) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (!playerViewModel.playerState.isPlaying.value ||
+      _timeAddDanmakuIsRunning = true;
+
+      var now = DateTime.now().millisecondsSinceEpoch;
+      int timeConsumed = now - prevStartTime; // 计算上一次循环的真实耗时
+      int delayTime = intervalTime - timeConsumed; // 动态计算延迟时间
+      if (delayTime > 0) {
+        await Future.delayed(Duration(milliseconds: delayTime));
+      }
+      if (disposed ||
+          !videoIsPlaying ||
+          danmakuController == null ||
           !danmakuController!.running) {
         _timeAddDanmakuIsRunning = false;
         break;
       }
-      _timeAddDanmakuIsRunning = true;
+
       // 计算当前应该处理的时间段
-      int currentGroupTime =
-          (playerViewModel.playerState.positionDuration.value.inMilliseconds ~/
-              intervalTime) *
-          intervalTime;
-      currentGroupTime += (danmakuState.adjustTime.value * 1000).toInt();
+      int currentGroupTime = getCurrentGroupTime();
       if (currentGroupTime != prevAddDanmakuTime) {
         if (groupDanmakuMap.containsKey(currentGroupTime)) {
           addDanmaku(groupDanmakuMap[currentGroupTime] ?? []);
         }
         prevAddDanmakuTime = currentGroupTime;
       }
+      prevStartTime = DateTime.now().millisecondsSinceEpoch; // 更新本次循环开始时间
     }
     _processingDanmakuList = false;
   }
 
+  int getCurrentGroupTime() {
+    // 获取当前播放时间（毫秒）
+    int currentTime =
+        playerViewModel.playerState.positionDuration.value.inMilliseconds;
+
+    // 将弹幕添加到 groupDanmakuMap 中
+    int groupTime = (currentTime ~/ intervalTime) * intervalTime;
+    groupTime += (danmakuState.adjustTime.value * 1000).toInt();
+    return groupTime;
+  }
+
+  // 手动发送弹幕
+  void sendCustomDanmaku(List<DanmakuContentItem> danmakuList) {
+    if (danmakuController == null || disposed) {
+      return;
+    }
+    int groupTime = getCurrentGroupTime();
+    if (!groupDanmakuMap.containsKey(groupTime)) {
+      groupDanmakuMap[groupTime] = [];
+    }
+    groupDanmakuMap[groupTime]!.addAll(danmakuList);
+    addDanmaku(danmakuList);
+  }
+
   void beforeChangeVideoUrl() {
+    if (disposed) return;
     groupDanmakuMap.clear();
     stopDanmaku();
     prevAddDanmakuTime = -1;
   }
 
   void afterChangeVideoUrl(bool staring) {
+    if (disposed) return;
     if (staring) {
       startDanmaku();
     }
