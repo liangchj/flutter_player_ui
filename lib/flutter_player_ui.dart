@@ -11,5 +11,6 @@ export 'model/storage/play_history_model.dart';
 export 'utils/player_utils.dart';
 export 'utils/time_format_utils.dart';
 export 'interface/player_data_storage.dart';
+export 'enum/file_source_enums.dart';
 
 

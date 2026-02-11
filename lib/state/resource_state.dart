@@ -1,6 +1,7 @@
 import 'package:signals/signals.dart';
 
 import '../constant/style_constant.dart';
+import '../model/file_source_model.dart';
 import '../model/resource/api_model.dart';
 import '../model/resource/chapter_group_model.dart';
 import '../model/resource/chapter_model.dart';
@@ -57,7 +58,8 @@ class ResourceState extends BaseState {
   bool isAppendResourceAndUpdateLoadingState = false;
 
   // 弹幕文件路径
-  final Signal<String> danmakuFilePath = signal("");
+  // final Signal<String> danmakuFilePath = signal("");
+  final Signal<FileSourceModel?> danmakuSource = signal(null);
 
   void _init() {
     _effectCleanupList.addAll([
@@ -259,7 +261,7 @@ class ResourceState extends BaseState {
     resourcePlayingState.dispose();
     resourceModel.dispose();
     chapterList.dispose();
-    danmakuFilePath.dispose();
+    danmakuSource.dispose();
     disposed = true;
   }
 
@@ -283,7 +285,7 @@ class ResourceState extends BaseState {
           chapterActivatedIndex.value;
       // 改为播放器解析完成后再赋值
       // danmakuFilePath.value = playingChapter?.danmakuPath ?? "";
-      danmakuFilePath.value = "";
+      danmakuSource.value = null;
     });
   }
 

@@ -70,8 +70,8 @@ class PlayerViewModel extends BaseViewModel {
         var value = playerState.isInitialized.value;
         untracked(() {
           if (value) {
-            resourceState.danmakuFilePath.value =
-                resourceState.playingChapter?.danmakuPath ?? "";
+            resourceState.danmakuSource.value =
+                resourceState.playingChapter?.danmakuSource;
           } else {
             playerState.isPlaying.value = false;
             playerState.isBuffering.value = false;

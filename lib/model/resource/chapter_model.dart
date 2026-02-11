@@ -1,3 +1,5 @@
+import '../file_source_model.dart';
+
 class ChapterModel {
   final String name;
 
@@ -13,8 +15,8 @@ class ChapterModel {
   /// 播放链接
   final String? playUrl;
 
-  final String? danmakuPath;
-  final String? subtitlePath;
+  final FileSourceModel? danmakuSource;
+  final FileSourceModel? subtitleSource;
 
   Map<String, dynamic>? extras;
   Map<String, String>? httpHeaders;
@@ -30,8 +32,8 @@ class ChapterModel {
     this.playing = false,
     required this.index,
     this.playUrl,
-    this.danmakuPath,
-    this.subtitlePath,
+    this.danmakuSource,
+    this.subtitleSource,
     this.extras,
     this.httpHeaders,
     this.start,

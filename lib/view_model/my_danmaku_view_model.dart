@@ -93,9 +93,9 @@ class MyDanmakuViewModel extends BaseViewModel {
       }),
 
       effect(() {
-        var value = playerViewModel.resourceState.danmakuFilePath.value;
+        var value = playerViewModel.resourceState.danmakuSource.value;
         untracked(() {
-          if (value.isNotEmpty) {
+          if (value != null && value.path.isNotEmpty) {
             parseDanmakuFile();
           }
         });
@@ -315,7 +315,8 @@ class MyDanmakuViewModel extends BaseViewModel {
     bool parseStart = true,
   }) async {
     if (disposed) return;
-    if (playerViewModel.resourceState.danmakuFilePath.value.isEmpty) {
+    if ((playerViewModel.resourceState.danmakuSource.value?.path ?? "")
+        .isEmpty) {
       return;
     }
     if (danmakuController == null &&
@@ -340,7 +341,7 @@ class MyDanmakuViewModel extends BaseViewModel {
       }
     });
     parser.parser(
-      path: playerViewModel.resourceState.danmakuFilePath.value,
+      path: playerViewModel.resourceState.danmakuSource.value!.path,
       groupDanmakuMap: groupDanmakuMap,
     );
   }
