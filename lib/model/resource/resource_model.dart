@@ -6,8 +6,18 @@ class ResourceModel {
   // 名称
   final String name;
   final String? enName;
-  final String url;
+  String url;
   List<ApiModel>? apiList;
 
   ResourceModel({required this.id, required this.name, this.enName, required this.url, this.apiList});
+
+
+  factory ResourceModel.fromJson(Map<String, dynamic> json) {
+    return ResourceModel(
+      id: (json["id"] ?? "").toString(),
+      name: (json["name"] ?? "").toString(),
+      enName: (json["enName"] ?? "").toString(),
+      url: (json["url"] ?? "").toString(),
+    );
+  }
 }

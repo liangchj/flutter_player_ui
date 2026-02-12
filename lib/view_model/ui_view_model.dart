@@ -177,8 +177,8 @@ class UIViewModel extends BaseViewModel {
               ),
               if (danmakuState.isVisible.value)
                 Positioned(
-                  right: 9.5,
-                  bottom: 9.5,
+                  right: 13.5,
+                  bottom: 13.5,
                   child: Material(
                     color: Colors.white,
                     shape: CircleBorder(),
