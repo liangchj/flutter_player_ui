@@ -15,7 +15,7 @@ List<ChapterModel> chapterModelListFromDynamic(dynamic data) {
     return data;
   } else if (data is List<dynamic>) {
     return List<ChapterModel>.from(
-      data.map((x) => ChapterModel.fromJson(x as Map<String, dynamic>)),
+      data.map((x) => ChapterModel.fromJson(Map.from(x))),
     );
   } else if (data is List<Map<String, dynamic>>) {
     return chapterModelListFromJson(data);
@@ -68,7 +68,7 @@ class ChapterModel {
     this.historyDuration,
   });
 
-  factory ChapterModel.fromJson(Map<String, dynamic> json) {
+  factory ChapterModel.fromJson(Map<dynamic, dynamic> json) {
     var activated = json['activated'];
     var playing = json['playing'];
     var index = json['index'];

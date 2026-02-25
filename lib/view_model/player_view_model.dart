@@ -149,18 +149,38 @@ class PlayerViewModel extends BaseViewModel {
     _recordPlayHistory();
     // 停止定时器
     _stopHistoryRecordTimer();
+    if (!resourceState.disposed) {
+      try {
+        resourceState.dispose();
+      } catch (_) {}
+    }
+    if (!playerState.disposed) {
+      try {
+        playerState.dispose();
+      } catch (_) {}
+    }
+    if (!myDanmakuViewModel.disposed) {
+      try {
+        myDanmakuViewModel.dispose();
+      } catch (_) {}
+    }
+
+    if (!uiViewModel.disposed) {
+      try {
+        uiViewModel.dispose();
+      } catch (_) {}
+    }
+
     for (var cleanup in _effectCleanupList) {
       cleanup();
     }
     await stop();
     if (player.value != null && !player.value!.disposed) {
-      player.value?.dispose();
+      try {
+        player.value?.dispose();
+      } catch (_) {}
     }
-    player.dispose();
-    myDanmakuViewModel.dispose();
-    uiViewModel.dispose();
-    resourceState.dispose();
-    playerState.dispose();
+
     disposed = true;
   }
 

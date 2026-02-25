@@ -89,7 +89,11 @@ class UIViewModel extends BaseViewModel {
   @override
   void dispose() {
     hideTimer?.cancel();
-    uiState.dispose();
+    if (!uiState.disposed) {
+      try {
+        uiState.dispose();
+      } catch (_) {}
+    }
     for (var e in _effectCleanupList) {
       e.call();
     }

@@ -7,7 +7,7 @@ class FileSourceModel {
 
   FileSourceModel({required this.sourceType, required this.path});
 
-  factory FileSourceModel.fromJson(Map<String, dynamic> json) {
+  factory FileSourceModel.fromJson(Map<dynamic, dynamic> json) {
     return FileSourceModel(
       sourceType: FileSourceEnums.values.firstWhere(
         (element) => element.toString() == json['sourceType'],

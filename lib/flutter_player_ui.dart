@@ -3,7 +3,8 @@ export 'player_view.dart';
 export 'interface/iplayer.dart';
 export 'view_model/player_view_model.dart';
 
-export 'model/resource/file_source_model.dart';
+export 'model/source_option_model.dart';
+export 'model/file_source_model.dart';
 export 'model/resource/chapter_model.dart';
 export 'model/resource/resource_model.dart';
 export 'model/resource/api_model.dart';

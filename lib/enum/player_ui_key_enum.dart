@@ -15,6 +15,7 @@ enum UIKeyEnum {
   leftBottomHitUI(),
   restartUI(),
   danmakuSettingUI(),
+  loadingUI(),
   centerErrorUI();
 
   const UIKeyEnum();

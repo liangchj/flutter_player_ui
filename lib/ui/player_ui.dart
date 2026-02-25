@@ -54,6 +54,22 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                   ),
                 ),
                 ...uiViewModel.uiState.overlayUIList,
+                Watch(
+                  (context) =>
+                      uiViewModel
+                          .playerViewModel
+                          .playerState
+                          .isInitialized
+                          .value
+                      ? SizedBox.shrink()
+                      : Positioned.fill(
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                ),
               ],
             ),
     );

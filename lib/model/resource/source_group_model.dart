@@ -15,7 +15,7 @@ List<SourceGroupModel> sourceGroupModelListFromDynamic(dynamic data) {
     return data;
   } else if (data is List<dynamic>) {
     return List<SourceGroupModel>.from(
-      data.map((x) => SourceGroupModel.fromJson(x as Map<String, dynamic>)),
+      data.map((x) => SourceGroupModel.fromJson(Map.from(x))),
     );
   } else if (data is List<Map<String, dynamic>>) {
     return sourceGroupModelListFromJson(data);
@@ -35,7 +35,7 @@ class SourceGroupModel {
 
   SourceGroupModel({this.name, this.enName, required this.chapterList});
 
-  factory SourceGroupModel.fromJson(Map<String, dynamic> json) {
+  factory SourceGroupModel.fromJson(Map<dynamic, dynamic> json) {
     List<ChapterModel> chapterList = [];
     var chapterListVar = json['chapterList'];
     if (chapterListVar != null) {

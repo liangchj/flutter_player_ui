@@ -12,7 +12,7 @@ class ResourceModel {
   ResourceModel({required this.id, required this.name, this.enName, required this.url, this.apiList});
 
 
-  factory ResourceModel.fromJson(Map<String, dynamic> json) {
+  factory ResourceModel.fromJson(Map<dynamic, dynamic> json) {
     return ResourceModel(
       id: (json["id"] ?? "").toString(),
       name: (json["name"] ?? "").toString(),
