@@ -3,6 +3,7 @@ export 'player_view.dart';
 export 'interface/iplayer.dart';
 export 'view_model/player_view_model.dart';
 
+export 'model/resource/file_source_model.dart';
 export 'model/resource/chapter_model.dart';
 export 'model/resource/resource_model.dart';
 export 'model/resource/api_model.dart';
@@ -12,5 +13,11 @@ export 'utils/player_utils.dart';
 export 'utils/time_format_utils.dart';
 export 'interface/player_data_storage.dart';
 export 'enum/file_source_enums.dart';
+
+export 'widget/api_widget.dart';
+export 'widget/chapter_group_widget.dart';
+export 'widget/chapter_list_widget.dart';
+export 'widget/chapter_widget.dart';
+export 'widget/source_group_widget.dart';
 
 
