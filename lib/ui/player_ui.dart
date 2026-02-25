@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:signals/signals_flutter.dart';
 
+import '../utils/platform_utils.dart';
 import '../view_model/player_view_model.dart';
 import '../view_model/ui_view_model.dart';
 
@@ -22,8 +23,11 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: ClipRect(
+    return Watch((context) {
+      final isFullscreen =
+          widget.playerViewModel.playerState.isFullscreen.value;
+
+      Widget content = ClipRect(
         child: LayoutBuilder(
           builder: (context, constraints) {
             uiViewModel.uiState.uiSize.value = Size(
@@ -36,8 +40,24 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
             return _ui();
           },
         ),
-      ),
-    );
+      );
+
+      bool useSafeArea = false;
+
+      if (PlatformUtils.isMobile) {
+        // 移动端：检查系统UI
+        final mediaQuery = MediaQuery.of(context);
+        final hasSystemUI =
+            mediaQuery.padding.top > 0 ||
+            mediaQuery.padding.bottom > 0 ||
+            mediaQuery.padding.left > 0 ||
+            mediaQuery.padding.right > 0;
+
+        useSafeArea = isFullscreen && hasSystemUI;
+      }
+
+      return useSafeArea ? SafeArea(child: content) : content;
+    });
   }
 
   Widget _ui() {
@@ -48,9 +68,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
               children: [
                 Positioned.fill(
                   child: Watch(
-                    (context) =>
-                        uiViewModel.danmakuState.danmakuView.value ??
-                        Container(),
+                    (context) => uiViewModel.danmakuState.danmakuView.value,
                   ),
                 ),
                 ...uiViewModel.uiState.overlayUIList,
