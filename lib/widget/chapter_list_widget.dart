@@ -120,10 +120,12 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
     for (var element in _effectCleanups) {
       element.call();
     }
-    int index = resourceState.playingChapterGroupToChapterIndex;
-    index = index >= 0 ? index : 0;
-    if (_scrollController != null && index != _activatedIndex) {
-      option.onDispose?.call(index);
+    if (!resourceState.disposed) {
+      int index = resourceState.playingChapterGroupToChapterIndex;
+      index = index >= 0 ? index : 0;
+      if (_scrollController != null && index != _activatedIndex) {
+        option.onDispose?.call(index);
+      }
     }
     _scrollController?.dispose();
     super.dispose();

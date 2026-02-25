@@ -16,11 +16,7 @@ import '../view_model/ui_view_model.dart';
 import 'clickable_button_widget.dart';
 
 class ApiWidget extends StatefulWidget {
-  const ApiWidget({
-    super.key,
-    required this.uiViewModel,
-    required this.option,
-  });
+  const ApiWidget({super.key, required this.uiViewModel, required this.option});
   final UIViewModel uiViewModel;
   final SourceOptionModel option;
 
@@ -75,9 +71,11 @@ class _ApiWidgetState extends State<ApiWidget> {
 
   @override
   void dispose() {
-    if (_scrollController != null &&
-        resourceState.apiActivatedIndex.value != _activatedIndex) {
-      option.onDispose?.call(resourceState.apiActivatedIndex.value);
+    if (!resourceState.disposed) {
+      if (_scrollController != null &&
+          resourceState.apiActivatedIndex.value != _activatedIndex) {
+        option.onDispose?.call(resourceState.apiActivatedIndex.value);
+      }
     }
     _scrollController?.dispose();
     super.dispose();

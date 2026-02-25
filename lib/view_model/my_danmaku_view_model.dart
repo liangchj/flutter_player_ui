@@ -112,6 +112,7 @@ class MyDanmakuViewModel extends BaseViewModel {
     }
     danmakuController?.pause();
     danmakuController?.clear();
+    if (disposed) return;
     danmakuState.danmakuView.value = SizedBox.shrink();
     disposed = true;
   }

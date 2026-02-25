@@ -64,10 +64,12 @@ class _ChapterGroupWidgetState extends State<ChapterGroupWidget> {
 
   @override
   void dispose() {
-    int index = resourceState.chapterGroupActivatedIndex.value;
-    index = index >= 0 ? index : 0;
-    if (_scrollController != null && index != _activatedIndex) {
-      option.onDispose?.call(index);
+    if (!resourceState.disposed) {
+      int index = resourceState.chapterGroupActivatedIndex.value;
+      index = index >= 0 ? index : 0;
+      if (_scrollController != null && index != _activatedIndex) {
+        option.onDispose?.call(index);
+      }
     }
     _scrollController?.dispose();
     super.dispose();

@@ -74,12 +74,14 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
 
   @override
   void dispose() {
-    int index = resourceState.apiGroupActivatedIndex.value;
-    if (index < 0) {
-      index = 0;
-    }
-    if (_scrollController != null && index != _activatedIndex) {
-      option.onDispose?.call(index);
+    if (!resourceState.disposed) {
+      int index = resourceState.apiGroupActivatedIndex.value;
+      if (index < 0) {
+        index = 0;
+      }
+      if (_scrollController != null && index != _activatedIndex) {
+        option.onDispose?.call(index);
+      }
     }
     _scrollController?.dispose();
     super.dispose();

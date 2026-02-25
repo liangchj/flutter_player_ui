@@ -149,6 +149,12 @@ class PlayerViewModel extends BaseViewModel {
     _recordPlayHistory();
     // 停止定时器
     _stopHistoryRecordTimer();
+    if (!uiViewModel.disposed) {
+      try {
+        uiViewModel.dispose();
+      } catch (_) {}
+    }
+
     if (!resourceState.disposed) {
       try {
         resourceState.dispose();
@@ -162,12 +168,6 @@ class PlayerViewModel extends BaseViewModel {
     if (!myDanmakuViewModel.disposed) {
       try {
         myDanmakuViewModel.dispose();
-      } catch (_) {}
-    }
-
-    if (!uiViewModel.disposed) {
-      try {
-        uiViewModel.dispose();
       } catch (_) {}
     }
 
