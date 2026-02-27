@@ -28,12 +28,13 @@ class _BottomUIState extends State<BottomUI> {
       width: double.infinity,
       // 背景渐变效果
       decoration: BoxDecoration(gradient: StyleConstant.bottomUILinearGradient),
-      child: _buildBottomUI(),
+      child: _buildBottomUI(context),
     );
   }
 
-  Widget _buildBottomUI() {
-    return Column(
+  Widget _buildBottomUI(BuildContext context) {
+    return uiViewModel.bottomControlBar;
+    /*return Watch((context) => playerState.isFullscreen.value ? Column(
       children: [
         Padding(
           padding: EdgeInsetsGeometry.symmetric(
@@ -42,16 +43,19 @@ class _BottomUIState extends State<BottomUI> {
           child: _buildProgressBar(),
         ),
         Watch(
-          (context) => Row(
+              (context) => Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: uiViewModel.fullscreenBottomUIItemList
+            children: uiViewModel.bottomControlUIItemList
                 .where((item) => item.visible.value)
                 .map((e) => e.child)
                 .toList(),
           ),
         ),
       ],
-    );
+    ) : Row(
+      children: [
+      ],
+    ));*/
   }
 
   /// 进度条

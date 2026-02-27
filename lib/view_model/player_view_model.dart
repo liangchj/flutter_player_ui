@@ -22,11 +22,12 @@ class PlayerViewModel extends BaseViewModel {
   final Signal<IPlayer?> player = signal(null);
   final Signal<bool> playerInitialized = signal(false);
   late FullscreenUtils fullscreenUtils;
-  late MyDanmakuViewModel myDanmakuViewModel;
+  MyDanmakuViewModel get myDanmakuViewModel => uiViewModel.myDanmakuViewModel;
   bool _initialized = false;
   bool get initialized => _initialized;
   // 标记是否只有全屏页面
-  bool onlyFullscreen = false;
+  bool fullScreen;
+  final Signal<bool> onlyFullscreen = signal(false);
   final List<EffectCleanup> _effectCleanupList = [];
 
   PlayerDataStorage? dataStorage;
@@ -35,19 +36,31 @@ class PlayerViewModel extends BaseViewModel {
   Timer? _historyRecordTimer;
   Duration startPlayDuration = Duration.zero;
 
-  PlayerViewModel() {
+  // 添加 BuildContext 变量
+  BuildContext? _context;
+  BuildContext get context {
+    if (_context == null) {
+      throw StateError('BuildContext 尚未初始化，请先调用 initContext 方法');
+    }
+    return _context!;
+  }
+
+  // 初始化 context 的方法
+  void initContext(BuildContext context) {
+    _context = context;
+  }
+
+  PlayerViewModel({this.fullScreen = false}) {
     playerState = PlayerState();
     resourceState = ResourceState();
     uiViewModel = UIViewModel(this);
     fullscreenUtils = FullscreenUtils(this);
-    // myDanmakuViewModel = MyDanmakuViewModel(playerViewModel: this);
-    myDanmakuViewModel = uiViewModel.myDanmakuViewModel;
     _init();
     _initialized = true;
   }
 
   void _init() async {
-    double? playSpeed = await dataStorage?.getSetting("playSpeed");
+    double? playSpeed = await dataStorage?.getSetting<double>("playSpeed");
     if (playSpeed != null) {
       playerState.playSpeed.value = playSpeed;
     }
@@ -149,6 +162,12 @@ class PlayerViewModel extends BaseViewModel {
     _recordPlayHistory();
     // 停止定时器
     _stopHistoryRecordTimer();
+    if (player.value != null && !player.value!.disposed) {
+      try {
+        player.value?.dispose();
+      } catch (_) {}
+    }
+    await stop();
     if (!uiViewModel.disposed) {
       try {
         uiViewModel.dispose();
@@ -165,20 +184,8 @@ class PlayerViewModel extends BaseViewModel {
         playerState.dispose();
       } catch (_) {}
     }
-    if (!myDanmakuViewModel.disposed) {
-      try {
-        myDanmakuViewModel.dispose();
-      } catch (_) {}
-    }
-
     for (var cleanup in _effectCleanupList) {
       cleanup();
-    }
-    await stop();
-    if (player.value != null && !player.value!.disposed) {
-      try {
-        player.value?.dispose();
-      } catch (_) {}
     }
 
     disposed = true;

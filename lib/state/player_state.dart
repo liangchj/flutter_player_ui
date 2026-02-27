@@ -5,10 +5,14 @@ import '../enum/player_fit_enum.dart';
 import 'base_state.dart';
 
 class PlayerState extends BaseState {
+  PlayerState({bool fullscreen = false}) {
+    isFullscreen = Signal(fullscreen);
+  }
   // 播放器
   final Signal<Widget> playerView = Signal(Container());
   // 全屏
-  final Signal<bool> isFullscreen = Signal(true);
+  // final Signal<bool> isFullscreen = Signal(true);
+  late Signal<bool> isFullscreen;
   // 自动播放
   bool autoPlay = false;
 

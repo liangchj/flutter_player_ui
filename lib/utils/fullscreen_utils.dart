@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 
 import '../state/player_state.dart';
 import '../view_model/player_view_model.dart';
@@ -7,19 +8,25 @@ import '../view_model/player_view_model.dart';
 class FullscreenUtils {
   final PlayerViewModel playerViewModel;
 
-  FullscreenUtils(this.playerViewModel);
+  FullscreenUtils(this.playerViewModel) {
+    FullScreen.ensureInitialized().then(
+      (v) => _fullscreenEnsureInitialized = true,
+    );
+  }
+
+  bool _fullscreenEnsureInitialized = false;
 
   PlayerState get playerState => playerViewModel.playerState;
 
-  void toggleFullscreen({bool exit = false, required BuildContext context}) {
+  void toggleFullscreen({bool exit = false}) {
     bool playing = playerViewModel.player.value?.playing ?? false;
     if (playerViewModel.player.value != null && playing) {
       playerViewModel.player.value!.pause();
     }
     if (playerState.isFullscreen.value || exit) {
       bool fullscreen = playerState.isFullscreen.value;
-      exitFullscreen(context);
-      if (fullscreen && !playerViewModel.onlyFullscreen && playing) {
+      exitFullscreen();
+      if (fullscreen && !playerViewModel.onlyFullscreen.value && playing) {
         playerViewModel.player.value!.play();
       }
     } else {
@@ -35,8 +42,12 @@ class FullscreenUtils {
     }*/
   }
 
-  void enterFullscreen() {
-    // FullScreen.setFullScreen(true);
+  Future<void> enterFullscreen() async {
+    if (!_fullscreenEnsureInitialized) {
+      await FullScreen.ensureInitialized();
+      _fullscreenEnsureInitialized = true;
+    }
+    FullScreen.setFullScreen(true);
     playerState.isFullscreen.value = true;
     lockLandscapeOrientation();
   }
@@ -52,17 +63,25 @@ class FullscreenUtils {
     ]);
   }
 
-  void exitFullscreen(BuildContext context) {
-    // FullScreen.setFullScreen(false);
-    if (!playerState.isFullscreen.value || playerViewModel.onlyFullscreen) {
-      if (playerViewModel.onlyFullscreen) {
+  Future<void> exitFullscreen() async {
+    if (!_fullscreenEnsureInitialized) {
+      await FullScreen.ensureInitialized();
+      _fullscreenEnsureInitialized = true;
+    }
+    FullScreen.setFullScreen(false);
+    if (!playerState.isFullscreen.value || playerViewModel.onlyFullscreen.value) {
+      if (playerViewModel.onlyFullscreen.value) {
         playerViewModel.pause();
         playerViewModel.player.value?.onDisposePlayer();
       }
-      Navigator.of(context).pop();
+      _pop();
     }
     playerState.isFullscreen.value = false;
     unlockOrientation();
+  }
+
+  void _pop() {
+    Navigator.of(playerViewModel.context).pop();
   }
 
   // 恢复竖屏

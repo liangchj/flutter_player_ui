@@ -26,8 +26,8 @@ class _TopUIState extends State<TopUI> {
         children: [
           // 返回按钮
           IconButton(
-            onPressed: () => uiViewModel.playerViewModel.fullscreenUtils
-                .exitFullscreen(context),
+            onPressed: () =>
+                uiViewModel.playerViewModel.fullscreenUtils.exitFullscreen(),
             icon: Icon(Icons.arrow_back_ios, color: _color),
           ),
           // 标题

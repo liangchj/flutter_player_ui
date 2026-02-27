@@ -33,7 +33,7 @@ class PlayerUtils {
               playerViewModel: player?.playerViewModel,
               onCreatePlayerViewModel: (value) {
                 viewModel = value;
-                viewModel!.onlyFullscreen = true;
+                viewModel!.onlyFullscreen.value = true;
                 viewModel!.fullscreenUtils.enterFullscreen();
 
                 viewModel!.playerState.autoPlay = true;

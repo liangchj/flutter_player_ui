@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_volume_controller/flutter_volume_controller.dart';
@@ -21,11 +22,11 @@ import 'player_view_model.dart';
 
 class UIViewModel extends BaseViewModel {
   final PlayerViewModel playerViewModel;
-  // MyDanmakuViewModel get myDanmakuViewModel => playerViewModel.myDanmakuViewModel;
   late MyDanmakuViewModel myDanmakuViewModel;
   late UIState uiState;
   DanmakuState get danmakuState => myDanmakuViewModel.danmakuState;
-  List<BottomUIItemModel> fullscreenBottomUIItemList = [];
+  List<BottomUIItemModel> bottomControlUIItemList = [];
+  Widget bottomControlBar = Container();
 
   Color get backgroundColor => StyleConstant.uIBackgroundColor;
   // 获取UI文字颜色（播放器ui控件背景默认是黑色）
@@ -93,6 +94,11 @@ class UIViewModel extends BaseViewModel {
     for (var e in _effectCleanupList) {
       e.call();
     }
+    if (!myDanmakuViewModel.disposed) {
+      try {
+        myDanmakuViewModel.dispose();
+      } catch (_) {}
+    }
     if (!uiState.disposed) {
       try {
         uiState.dispose();
@@ -102,7 +108,40 @@ class UIViewModel extends BaseViewModel {
   }
 
   void _initBottomControlItemList(Color textColor) {
-    fullscreenBottomUIItemList = [
+    Widget progressBar = Watch((context) {
+      if (!uiState.bottomUI.visible.value) {
+        return Container();
+      }
+      return AbsorbPointer(
+        absorbing: !playerState.isInitialized.value,
+        child: ProgressBar(
+          timeLabelLocation: TimeLabelLocation.sides,
+          timeLabelTextStyle: TextStyle(color: Colors.white),
+          timeLabelType: TimeLabelType.totalTime,
+          barHeight: StyleConstant.progressBarHeight,
+          thumbRadius: StyleConstant.progressBarThumbInnerRadius,
+          thumbGlowRadius: StyleConstant.progressBarThumbRadius,
+          progress: playerState.positionDuration.value,
+          total: playerState.duration.value,
+          buffered: playerState.bufferedDuration.value,
+          onDragStart: (details) {
+            cancelHideTimer();
+            playerState.isDragging.value = true;
+          },
+          onDragEnd: () {
+            cancelAndRestartTimer();
+            playerState.isDragging.value = false;
+          },
+          onDragUpdate: (details) {
+            // LoggerUtils.logger.d("进度条改变事件");
+          },
+          onSeek: (details) {
+            playerViewModel.seekTo(Duration(seconds: details.inSeconds));
+          },
+        ),
+      );
+    });
+    bottomControlUIItemList = [
       BottomUIItemModel(
         type: ControlType.play,
         fixedWidth: StyleConstant.bottomBtnSize,
@@ -157,11 +196,11 @@ class UIViewModel extends BaseViewModel {
         visible: Signal(true),
       ),
       /*BottomUIItemModel(
-        type: ControlType.sendDanmaku,
-        fixedWidth: 76,
-        priority: 5,
-        child: TextButton(onPressed: () {}, child: Text("发送弹幕", style: TextStyle(color: textColor))),
-      ),*/
+          type: ControlType.sendDanmaku,
+          fixedWidth: 76,
+          priority: 5,
+          child: TextButton(onPressed: () {}, child: Text("发送弹幕", style: TextStyle(color: textColor))),
+        ),*/
       BottomUIItemModel(
         type: ControlType.danmaku,
         fixedWidth: StyleConstant.bottomBtnSize,
@@ -218,38 +257,38 @@ class UIViewModel extends BaseViewModel {
         child: Expanded(child: Container()),
       ),
       /*BottomUIItemModel(
-        type: ControlType.source,
-        fixedWidth: StyleConstant.bottomBtnSize,
-        priority: 5,
-        child: Obx(() {
-          */
+          type: ControlType.source,
+          fixedWidth: StyleConstant.bottomBtnSize,
+          priority: 5,
+          child: Obx(() {
+            */
       /*if (resourcePlayState.playSourceCount <= 1 &&
-              resourcePlayState.sourceGroupCount <= 1) {
-            return Container();
-          }*/
+                resourcePlayState.sourceGroupCount <= 1) {
+              return Container();
+            }*/
       /*
-          return IconButton(
-            padding: const EdgeInsets.symmetric(horizontal: 0),
-            color: StyleConstant.iconColor,
-            onPressed: () => {
-              // onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
-            },
-            icon: Icon(Icons.source_rounded),
-          );
-        }),
-      ),*/
+            return IconButton(
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              color: StyleConstant.iconColor,
+              onPressed: () => {
+                // onlyShowUIByKeyList([PlayerUIKeyEnum.sourceUI.name]),
+              },
+              icon: Icon(Icons.source_rounded),
+            );
+          }),
+        ),*/
       BottomUIItemModel(
         type: ControlType.chapter,
         fixedWidth: StyleConstant.bottomBtnSize,
         priority: 4,
         /*child: IconButton(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          color: StyleConstant.iconColor,
-          onPressed: () => {
-            onlyShowUIByKeyList([UIKeyEnum.chapterListUI.name]),
-          },
-          icon: Icon(Icons.list),
-        ),*/
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            color: StyleConstant.iconColor,
+            onPressed: () => {
+              onlyShowUIByKeyList([UIKeyEnum.chapterListUI.name]),
+            },
+            icon: Icon(Icons.list),
+          ),*/
         child: Watch(
           (context) =>
               playerViewModel.resourceState.activatedChapterList.length > 1
@@ -280,28 +319,93 @@ class UIViewModel extends BaseViewModel {
         ),
         visible: Signal(true),
       ),
-      BottomUIItemModel(
-        type: ControlType.exitOrEntryFullscreen,
-        fixedWidth: StyleConstant.bottomBtnSize,
-        priority: 1,
-        child: Watch(
-          (context) =>
-              playerState
-                  .isFullscreen
-                  .value //&& !onlyFullscreen
-              ? IconButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  color: textColor,
-                  onPressed: () {
-                    // fullscreenUtils.toggleFullscreen();
-                  },
-                  icon: Icon(Icons.fullscreen_exit_rounded),
-                )
-              : Container(),
+      if (!playerViewModel.onlyFullscreen.value)
+        BottomUIItemModel(
+          type: ControlType.exitOrEntryFullscreen,
+          fixedWidth: StyleConstant.bottomBtnSize,
+          priority: 1,
+          child: Watch(
+            (context) => playerViewModel.onlyFullscreen.value
+                ? Container()
+                : IconButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    color: textColor,
+                    onPressed: () {
+                      playerViewModel.fullscreenUtils.toggleFullscreen();
+                    },
+                    icon: Icon(Icons.fullscreen_exit_rounded),
+                  ),
+          ),
+          visible: Signal(true),
         ),
-        visible: Signal(true),
-      ),
     ];
+
+    bottomControlBar = Watch(
+      (context) => playerState.isFullscreen.value
+          ? Column(
+              children: [
+                progressBar,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: bottomControlUIItemList
+                      .where((item) => item.visible.value)
+                      .map((e) => e.child)
+                      .toList(),
+                ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  color: StyleConstant.iconColor,
+                  onPressed: () => playerViewModel.playOrPause(),
+                  icon: Watch((context) {
+                    var isFinished = playerState.isFinished.value;
+                    var isPlaying = playerState.isPlaying.value;
+                    return isFinished
+                        ? IconConstant.bottomReplayPlayIcon
+                        : (isPlaying
+                              ? IconConstant.bottomPauseIcon
+                              : IconConstant.bottomPlayIcon);
+                  }),
+                ),
+                Watch(
+                  (context) =>
+                      playerViewModel.resourceState.playingChapterCount > 1
+                      ? Tooltip(
+                          message: playerViewModel.resourceState.haveNext
+                              ? "下一个视频"
+                              : "已经是最后一个视频", // 提示文本
+                          child: IconButton(
+                            padding: const EdgeInsets.symmetric(horizontal: 0),
+                            color: playerViewModel.resourceState.haveNext
+                                ? StyleConstant.iconColor
+                                : Colors.grey.shade400, // 置灰效果
+                            onPressed: playerViewModel.resourceState.haveNext
+                                ? () => playerViewModel.nextPlay()
+                                : null, // 禁用时设为 null
+                            icon: IconConstant.nextPlayIcon,
+                            enableFeedback:
+                                !playerViewModel.resourceState.haveNext, // 禁用反馈
+                          ),
+                        )
+                      : Container(),
+                ),
+                Expanded(child: progressBar),
+                if (!playerViewModel.onlyFullscreen.value)
+                  IconButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    color: textColor,
+                    onPressed: () {
+                      playerViewModel.fullscreenUtils.toggleFullscreen();
+                    },
+                    icon: Icon(Icons.fullscreen_exit_rounded),
+                  ),
+              ],
+            ),
+    );
   }
 
   Future<void> handleScreenChange(Size size) async {
@@ -336,7 +440,7 @@ class UIViewModel extends BaseViewModel {
         final availableWidth =
             size.width - StyleConstant.safeSpace * 2; // 减去左右边距
         final sortControls =
-            fullscreenBottomUIItemList
+            bottomControlUIItemList
                 .where((item) => item.type != ControlType.none)
                 .toList()
               ..sort((a, b) => a.priority.compareTo(b.priority));
@@ -645,7 +749,7 @@ class UIViewModel extends BaseViewModel {
     if (details.globalPosition.dx > (width / 2)) {
       FlutterVolumeController.updateShowSystemUI(false);
       FlutterVolumeController.getVolume().then(
-            (value) => playerState.volume.value = ((value ?? 0) * 100).floor(),
+        (value) => playerState.volume.value = ((value ?? 0) * 100).floor(),
       );
       playerState.isVolumeDragging.value = true;
       showUIKey = UIKeyEnum.centerVolumeUI.name;

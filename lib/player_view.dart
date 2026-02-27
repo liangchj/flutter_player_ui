@@ -11,12 +11,14 @@ class PlayerView extends StatefulWidget {
     this.playerViewModel,
     this.player,
     this.onCreatePlayerViewModel,
+    this.fullScreen = false,
   }) : assert(
          playerViewModel != null || (playerViewModel == null && player != null),
        );
   final PlayerViewModel? playerViewModel;
   final IPlayer? player;
   final Function(PlayerViewModel)? onCreatePlayerViewModel;
+  final bool fullScreen;
 
   @override
   State<PlayerView> createState() => _PlayerViewState();
@@ -34,7 +36,7 @@ class _PlayerViewState extends State<PlayerView> {
       if (widget.player?.playerViewModel == null) {
         viewModelIsNull = true;
       }
-      playerViewModel = widget.player?.playerViewModel ?? PlayerViewModel();
+      playerViewModel = widget.player?.playerViewModel ?? PlayerViewModel(fullScreen: widget.fullScreen, );
     } else {
       playerViewModel = widget.playerViewModel!;
     }
@@ -47,6 +49,8 @@ class _PlayerViewState extends State<PlayerView> {
       playerViewModel.player.value!.playerViewModel = playerViewModel;
     }
 
+    // 初始化 context
+    playerViewModel.initContext(context);
     widget.onCreatePlayerViewModel?.call(playerViewModel);
   }
 
