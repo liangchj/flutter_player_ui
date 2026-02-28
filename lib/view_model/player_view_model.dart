@@ -27,7 +27,8 @@ class PlayerViewModel extends BaseViewModel {
   bool get initialized => _initialized;
   // 标记是否只有全屏页面
   bool fullScreen;
-  final Signal<bool> onlyFullscreen = signal(false);
+  // final Signal<bool> onlyFullscreen = signal(false);
+  late final Signal<bool> onlyFullscreen;
   final List<EffectCleanup> _effectCleanupList = [];
 
   PlayerDataStorage? dataStorage;
@@ -50,7 +51,8 @@ class PlayerViewModel extends BaseViewModel {
     _context = context;
   }
 
-  PlayerViewModel({this.fullScreen = false}) {
+  PlayerViewModel({this.fullScreen = false, bool onlyFullscreen = false}) {
+    this.onlyFullscreen = signal(onlyFullscreen);
     playerState = PlayerState();
     resourceState = ResourceState();
     uiViewModel = UIViewModel(this);
@@ -158,16 +160,22 @@ class PlayerViewModel extends BaseViewModel {
 
   @override
   Future<void> dispose() async {
+    if (disposed) {
+      return;
+    }
     // 应用退出前记录一次播放历史
     _recordPlayHistory();
     // 停止定时器
     _stopHistoryRecordTimer();
-    if (player.value != null && !player.value!.disposed) {
+    player.dispose();
+    playerInitialized.dispose();
+    onlyFullscreen.dispose();
+    await stop();
+    if (!player.disposed && player.value != null && !player.value!.disposed) {
       try {
         player.value?.dispose();
       } catch (_) {}
     }
-    await stop();
     if (!uiViewModel.disposed) {
       try {
         uiViewModel.dispose();
@@ -356,7 +364,9 @@ class PlayerViewModel extends BaseViewModel {
   }
 
   Future<void> stop() async {
-    await player.value?.stop();
+    if (!player.disposed && player.value != null && !player.value!.disposed) {
+      await player.value?.stop();
+    }
     if (!playerState.disposed) {
       playerState.isPlaying.value = false;
     }

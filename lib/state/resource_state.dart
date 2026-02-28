@@ -242,6 +242,12 @@ class ResourceState extends BaseState {
         final index = chapterActivatedIndex.value;
         if (index >= 0) {
           untracked(() {
+            // 更新选中的章节组
+            // 获取当前章节下标所属章节组
+            int chapterGroupIndex = (index / StyleConstant.chapterGroupCount).floor();
+            chapterGroupActivatedIndex.value = chapterGroupIndex;
+
+            // 激活的章节触发其他具体内容
             onChapterTapped();
           });
         }
