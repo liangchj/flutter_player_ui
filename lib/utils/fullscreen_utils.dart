@@ -72,7 +72,7 @@ class FullscreenUtils {
     if (!playerState.isFullscreen.value || playerViewModel.onlyFullscreen.value) {
       if (playerViewModel.onlyFullscreen.value) {
         playerViewModel.pause();
-        playerViewModel.player.value?.onDisposePlayer();
+        playerViewModel.player.value?.dispose();
       }
       _pop();
     }

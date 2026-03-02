@@ -24,6 +24,7 @@ class PlayerUtils {
           canPop: true,
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
+              viewModel?.dispose();
               viewModel?.fullscreenUtils.unlockOrientation();
             }
           },

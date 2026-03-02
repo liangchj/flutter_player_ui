@@ -174,7 +174,11 @@ class ResourceState extends BaseState {
           activeState = activeState.copyWith(
             apiIndex: -1,
             apiGroupIndex: -1,
-            chapterGroupIndex: -1,
+            chapterGroupIndex: index > 0
+                ? (index / StyleConstant.chapterGroupCount).floor()
+                : index == 0
+                ? 0
+                : -1,
             chapterIndex: index,
           );
         }
@@ -244,7 +248,8 @@ class ResourceState extends BaseState {
           untracked(() {
             // 更新选中的章节组
             // 获取当前章节下标所属章节组
-            int chapterGroupIndex = (index / StyleConstant.chapterGroupCount).floor();
+            int chapterGroupIndex = (index / StyleConstant.chapterGroupCount)
+                .floor();
             chapterGroupActivatedIndex.value = chapterGroupIndex;
 
             // 激活的章节触发其他具体内容

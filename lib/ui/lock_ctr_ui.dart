@@ -22,6 +22,7 @@ class LockCtrUI extends StatelessWidget {
               uiViewModel.uiState.touchBackgroundShowUIKeyList,
             );
           }
+          uiViewModel.cancelAndRestartTimer();
         },
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(

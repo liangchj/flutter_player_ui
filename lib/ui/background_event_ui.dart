@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../view_model/ui_view_model.dart';
@@ -48,6 +49,12 @@ class _BackgroundEventUIState extends State<BackgroundEventUI> {
         if (!uiViewModel.uiState.uiLocked.value) {
           uiViewModel.volumeOrBrightnessOnVerticalDragEnd();
         }
+      },
+      onLongPressDown: (LongPressDownDetails details) {
+        // 倍数播放
+      },
+      onLongPressUp: () {
+        // 倍数播放
       },
     );
   }

@@ -24,6 +24,9 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Watch((context) {
+      if (widget.playerViewModel.disposed || uiViewModel.disposed) {
+        return Container();
+      }
       final isFullscreen =
           widget.playerViewModel.playerState.isFullscreen.value;
 

@@ -37,6 +37,9 @@ class PlayerViewModel extends BaseViewModel {
   Timer? _historyRecordTimer;
   Duration startPlayDuration = Duration.zero;
 
+  // 上一次的播放记录
+  PlayHistoryModel? previousPlayHistoryModel;
+
   // 添加 BuildContext 变量
   BuildContext? _context;
   BuildContext get context {
@@ -163,19 +166,19 @@ class PlayerViewModel extends BaseViewModel {
     if (disposed) {
       return;
     }
+    disposed = true;
     // 应用退出前记录一次播放历史
     _recordPlayHistory();
     // 停止定时器
     _stopHistoryRecordTimer();
-    player.dispose();
-    playerInitialized.dispose();
-    onlyFullscreen.dispose();
+
     await stop();
     if (!player.disposed && player.value != null && !player.value!.disposed) {
       try {
-        player.value?.dispose();
+        await player.value?.dispose();
       } catch (_) {}
     }
+
     if (!uiViewModel.disposed) {
       try {
         uiViewModel.dispose();
@@ -195,8 +198,9 @@ class PlayerViewModel extends BaseViewModel {
     for (var cleanup in _effectCleanupList) {
       cleanup();
     }
-
-    disposed = true;
+    player.dispose();
+    playerInitialized.dispose();
+    onlyFullscreen.dispose();
   }
 
   void _startHistoryRecordTimer() {
@@ -238,10 +242,15 @@ class PlayerViewModel extends BaseViewModel {
     resourceState.playingChapter?.historyDuration =
         playerState.positionDuration.value;
 
+    PlayHistoryModel historyModel =
+        previousPlayHistoryModel ?? getPlayHistoryModel();
+    dataStorage?.savePlayHistory(historyModel.key, historyModel);
+  }
+
+  PlayHistoryModel getPlayHistoryModel() {
     String id = "";
     String? apiKey;
     String? sourceGroupKey;
-    late PlayHistoryModel historyModel;
     if (resourceState.resourceModel.value == null) {
       id = resourceState.playingChapter?.playUrl ?? "";
     } else {
@@ -255,7 +264,7 @@ class PlayerViewModel extends BaseViewModel {
         }
       }
     }
-    historyModel = PlayHistoryModel(
+    return PlayHistoryModel(
       resourceId: id,
       apiKey: apiKey,
       sourceGroupKey: sourceGroupKey,
@@ -266,7 +275,6 @@ class PlayerViewModel extends BaseViewModel {
       positionInMilli: playerState.positionDuration.value.inMilliseconds,
       time: DateTime.now(),
     );
-    dataStorage?.savePlayHistory(historyModel.key, historyModel);
   }
 
   /// 重置播放状态
@@ -304,18 +312,20 @@ class PlayerViewModel extends BaseViewModel {
       WidgetsBinding.instance.addPostFrameCallback((_) {});
     });
 
-    _beforeChangeVideoUrl();
+    await _beforeChangeVideoUrl();
 
     player.value?.changeVideoUrl(autoPlay: autoPlay);
     myDanmakuViewModel.afterChangeVideoUrl(autoPlay);
   }
 
-  void _beforeChangeVideoUrl() async {
+  Future<void> _beforeChangeVideoUrl() async {
     // 停止弹幕
     myDanmakuViewModel.beforeChangeVideoUrl();
-
-    // 视频切换前记录上一个视频的历史
-    _recordPlayHistory();
+    if (previousPlayHistoryModel != null) {
+      // 视频切换前记录上一个视频的历史
+      _recordPlayHistory();
+    }
+    previousPlayHistoryModel = null;
     // 停止当前定时器
     _stopHistoryRecordTimer();
     // 重置状态
@@ -324,32 +334,16 @@ class PlayerViewModel extends BaseViewModel {
     startPlayDuration = Duration.zero;
     // 从缓存中读取新视频开始播放位置
     int historyPosition = 0;
-    String videoKey = "";
-    if (resourceState.resourceModel.value == null) {
-      videoKey = resourceState.playingChapter?.playUrl ?? "";
-    } else {
-      String videoId = resourceState.resourceModel.value!.id;
-      String apiKey = resourceState.playingApi!.api?.enName ?? "";
-      String? sourceGroupKey;
-      if (resourceState.playingSourceGroup != null) {
-        sourceGroupKey = resourceState.playingSourceGroup!.enName;
-      } else {
-        sourceGroupKey = apiKey;
-      }
-      videoKey =
-          'resourceId:${videoId}_apiKey:${apiKey}_sourceGroupKey:$sourceGroupKey';
-    }
-    if (videoKey.isNotEmpty) {
-      var playHistory = await dataStorage?.getPlayHistory(videoKey);
-      if (playHistory != null) {
-        historyPosition = playHistory.positionInMilli;
-        resourceState.playingChapter?.historyDuration = Duration(
-          milliseconds: historyPosition,
-        );
-        resourceState.playingChapter?.start = Duration(
-          milliseconds: historyPosition,
-        );
-      }
+    PlayHistoryModel historyModel = getPlayHistoryModel();
+    var playHistory = await dataStorage?.getPlayHistory(historyModel.key);
+    if (playHistory != null) {
+      historyPosition = playHistory.positionInMilli;
+      resourceState.playingChapter?.historyDuration = Duration(
+        milliseconds: historyPosition,
+      );
+      resourceState.playingChapter?.start = Duration(
+        milliseconds: historyPosition,
+      );
     }
   }
 
@@ -380,6 +374,7 @@ class PlayerViewModel extends BaseViewModel {
     if (player.value!.finished) {
       await seekTo(Duration.zero);
     }
+    uiViewModel.cancelAndRestartTimer();
     if (player.value!.playing) {
       return pause();
     } else {

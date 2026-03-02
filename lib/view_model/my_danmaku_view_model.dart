@@ -286,7 +286,9 @@ class MyDanmakuViewModel extends BaseViewModel {
       danmakuState.danmakuView.value = DanmakuScreen(
         createdController: (DanmakuController e) {
           danmakuController = e;
-          completer.complete();
+          if (!completer.isCompleted) {
+            completer.complete();
+          }
         },
         option: getDanmakuOption(),
       );

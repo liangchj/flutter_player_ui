@@ -7,9 +7,6 @@ abstract class IPlayer {
   // 播放器初始化
   Future<void> onInitPlayer();
 
-  // 销毁播放器
-  Future<void> onDisposePlayer();
-
   // 播放
   Future<void> play();
   // 暂停
@@ -27,7 +24,7 @@ abstract class IPlayer {
   bool get finished;
 
   /// 更新状态信息
-  void updateState();
+  Future<void> updateState();
 
   void changeVideoUrl({bool autoPlay = true});
 

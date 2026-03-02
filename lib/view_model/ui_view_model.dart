@@ -91,6 +91,7 @@ class UIViewModel extends BaseViewModel {
   void dispose() {
     hideTimer?.cancel();
     if (disposed) return;
+    disposed = true;
     for (var e in _effectCleanupList) {
       e.call();
     }
@@ -104,7 +105,6 @@ class UIViewModel extends BaseViewModel {
         uiState.dispose();
       } catch (_) {}
     }
-    disposed = true;
   }
 
   void _initBottomControlItemList(Color textColor) {
@@ -209,8 +209,9 @@ class UIViewModel extends BaseViewModel {
           (context) => Stack(
             children: [
               IconButton(
-                onPressed: () => {
-                  danmakuState.isVisible.value = !danmakuState.isVisible.value,
+                onPressed: () {
+                  danmakuState.isVisible.value = !danmakuState.isVisible.value;
+                  cancelAndRestartTimer();
                 },
                 icon: danmakuState.isVisible.value
                     ? IconConstant.danmakuOpen
