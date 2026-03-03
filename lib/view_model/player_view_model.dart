@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_player_ui/enum/player_ui_key_enum.dart';
 import 'package:flutter_player_ui/interface/player_data_storage.dart';
 import 'package:signals/signals.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -90,9 +91,11 @@ class PlayerViewModel extends BaseViewModel {
           if (value) {
             resourceState.danmakuSource.value =
                 resourceState.playingChapter?.danmakuSource;
+            uiViewModel.hideUIByKeyList([UIKeyEnum.centerInitializeUI.name]);
           } else {
             playerState.isPlaying.value = false;
             playerState.isBuffering.value = false;
+            uiViewModel.showUIByKeyList([UIKeyEnum.centerInitializeUI.name]);
           }
         });
       }),
@@ -109,6 +112,17 @@ class PlayerViewModel extends BaseViewModel {
           }
         });
       }),
+      effect(() {
+        var flag = playerState.isBuffering.value;
+        untracked(() async {
+          if (flag) {
+            uiViewModel.showUIByKeyList([UIKeyEnum.centerLoadingUI.name]);
+          } else {
+            uiViewModel.hideUIByKeyList([UIKeyEnum.centerLoadingUI.name]);
+          }
+        });
+      }),
+
       // 监听切换视频
       effect(() {
         var resourceStateModel = resourceState.resourcePlayingState.value;

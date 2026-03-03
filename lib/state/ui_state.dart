@@ -12,6 +12,8 @@ import '../ui/api_source_ui.dart';
 import '../ui/background_event_ui.dart';
 import '../ui/bottom_ui.dart';
 import '../ui/brightness_ui.dart';
+import '../ui/center_initialize_ui.dart';
+import '../ui/center_loading_ui.dart';
 import '../ui/center_play_progress_ui.dart';
 import '../ui/chapter_list_ui.dart';
 import '../ui/danmaku_setting_ui.dart';
@@ -96,6 +98,8 @@ class UIState extends BaseState {
   final List<String> notTouchCtrlKeyList = [
     UIKeyEnum.centerLoadingUI.name,
     UIKeyEnum.centerProgressUI.name,
+    UIKeyEnum.centerInitializeUI.name,
+    UIKeyEnum.longPressMultiplePlayUI.name,
     UIKeyEnum.centerVolumeUI.name,
     UIKeyEnum.centerBrightnessUI.name,
     UIKeyEnum.centerErrorUI.name,
@@ -131,6 +135,8 @@ class UIState extends BaseState {
   late final OverlayUIModel volumeUI;
   // 居中进度ui
   late final OverlayUIModel centerProgressUI;
+  late final OverlayUIModel centerLoadingUI;
+  late final OverlayUIModel centerInitializeUI;
   late final OverlayUIModel longPressMultiplePlayUI;
   // 弹幕设置ui
   late final OverlayUIModel danmakuSettingUI;
@@ -224,6 +230,21 @@ class UIState extends BaseState {
       hideRemove: false,
       tween: TweenConstant.opacityTween,
     );
+    centerInitializeUI = OpacityOverlayUIModel(
+      name: UIKeyEnum.centerInitializeUI.name,
+      widget: CenterInitializeUI(uiViewModel: uiViewModel),
+      useAnimationController: false,
+      hideRemove: false,
+      tween: TweenConstant.opacityTween,
+    );
+
+    centerLoadingUI = OpacityOverlayUIModel(
+      name: UIKeyEnum.centerLoadingUI.name,
+      widget: CenterLoadingUI(uiViewModel: uiViewModel),
+      useAnimationController: false,
+      hideRemove: false,
+      tween: TweenConstant.opacityTween,
+    );
 
     longPressMultiplePlayUI = OpacityOverlayUIModel(
       name: UIKeyEnum.longPressMultiplePlayUI.name,
@@ -273,6 +294,8 @@ class UIState extends BaseState {
       brightnessUI,
       volumeUI,
       centerProgressUI,
+      centerLoadingUI,
+      centerInitializeUI,
       longPressMultiplePlayUI,
       chapterListUI,
       apiSourceUI,

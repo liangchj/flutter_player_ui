@@ -75,7 +75,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                   ),
                 ),
                 ...uiViewModel.uiState.overlayUIList,
-                Watch(
+                /*Watch(
                   (context) =>
                       uiViewModel
                           .playerViewModel
@@ -90,7 +90,7 @@ class _PlayerUIState extends State<PlayerUI> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
-                ),
+                ),*/
               ],
             ),
     );
