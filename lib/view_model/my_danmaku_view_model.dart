@@ -107,6 +107,8 @@ class MyDanmakuViewModel extends BaseViewModel {
 
   @override
   void dispose() {
+    if (disposed) return;
+    disposed = true;
     for (var e in _effectCleanupList) {
       e.call();
     }
@@ -114,7 +116,6 @@ class MyDanmakuViewModel extends BaseViewModel {
     danmakuController?.clear();
     if (disposed) return;
     danmakuState.danmakuView.value = SizedBox.shrink();
-    disposed = true;
   }
 
   // 初始化配置
@@ -286,30 +287,22 @@ class MyDanmakuViewModel extends BaseViewModel {
       danmakuState.danmakuView.value = DanmakuScreen(
         createdController: (DanmakuController e) {
           danmakuController = e;
-          if (!completer.isCompleted) {
+          if (!disposed) {
             completer.complete();
           }
         },
         option: getDanmakuOption(),
       );
-      await completer.future;
-      startDanmakuProcessing();
+      if (!disposed) {
+        await completer.future;
+        startDanmakuProcessing();
+      }
+    } catch (_) {
     } finally {
       // 初始化完成，重置状态
       _initializingCompleter?.complete();
       _initializingCompleter = null;
     }
-    /*final completer = Completer<void>(); // 创建 Completer
-    danmakuState.danmakuView.value = DanmakuScreen(
-      createdController: (DanmakuController e) {
-        danmakuController = e;
-        completer.complete();
-      },
-      option: getDanmakuOption(),
-    );
-    await completer.future;
-    startDanmakuProcessing();
-    return Future.value();*/
   }
 
   // 解析弹幕文件

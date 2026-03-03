@@ -11,6 +11,7 @@ enum UIKeyEnum {
   centerVolumeUI(),
   centerBrightnessUI(),
   centerProgressUI(),
+  longPressMultiplePlayUI(),
   settingUI(),
   leftBottomHitUI(),
   restartUI(),

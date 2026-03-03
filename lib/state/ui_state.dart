@@ -16,6 +16,7 @@ import '../ui/center_play_progress_ui.dart';
 import '../ui/chapter_list_ui.dart';
 import '../ui/danmaku_setting_ui.dart';
 import '../ui/lock_ctr_ui.dart';
+import '../ui/long_press_multiple_play_ui.dart';
 import '../ui/play_speed_ui.dart';
 import '../ui/screenshot_ui.dart';
 import '../ui/setting_ui.dart';
@@ -130,6 +131,7 @@ class UIState extends BaseState {
   late final OverlayUIModel volumeUI;
   // 居中进度ui
   late final OverlayUIModel centerProgressUI;
+  late final OverlayUIModel longPressMultiplePlayUI;
   // 弹幕设置ui
   late final OverlayUIModel danmakuSettingUI;
   // 章节列表ui
@@ -222,6 +224,15 @@ class UIState extends BaseState {
       hideRemove: false,
       tween: TweenConstant.opacityTween,
     );
+
+    longPressMultiplePlayUI = OpacityOverlayUIModel(
+      name: UIKeyEnum.longPressMultiplePlayUI.name,
+      widget: LongPressMultiplePlayUI(uiViewModel: uiViewModel),
+      useAnimationController: false,
+      hideRemove: false,
+      tween: TweenConstant.opacityTween,
+    );
+
     danmakuSettingUI = AutoAdjustSlideOverlayUIModel(
       name: UIKeyEnum.danmakuSettingUI.name,
       widget: DanmakuSettingUI(uiViewModel: uiViewModel),
@@ -262,6 +273,7 @@ class UIState extends BaseState {
       brightnessUI,
       volumeUI,
       centerProgressUI,
+      longPressMultiplePlayUI,
       chapterListUI,
       apiSourceUI,
     ];

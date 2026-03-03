@@ -26,7 +26,6 @@ class UIViewModel extends BaseViewModel {
   late UIState uiState;
   DanmakuState get danmakuState => myDanmakuViewModel.danmakuState;
   List<BottomUIItemModel> bottomControlUIItemList = [];
-  Widget bottomControlBar = Container();
 
   Color get backgroundColor => StyleConstant.uIBackgroundColor;
   // 获取UI文字颜色（播放器ui控件背景默认是黑色）
@@ -108,39 +107,6 @@ class UIViewModel extends BaseViewModel {
   }
 
   void _initBottomControlItemList(Color textColor) {
-    Widget progressBar = Watch((context) {
-      if (!uiState.bottomUI.visible.value) {
-        return Container();
-      }
-      return AbsorbPointer(
-        absorbing: !playerState.isInitialized.value,
-        child: ProgressBar(
-          timeLabelLocation: TimeLabelLocation.sides,
-          timeLabelTextStyle: TextStyle(color: Colors.white),
-          timeLabelType: TimeLabelType.totalTime,
-          barHeight: StyleConstant.progressBarHeight,
-          thumbRadius: StyleConstant.progressBarThumbInnerRadius,
-          thumbGlowRadius: StyleConstant.progressBarThumbRadius,
-          progress: playerState.positionDuration.value,
-          total: playerState.duration.value,
-          buffered: playerState.bufferedDuration.value,
-          onDragStart: (details) {
-            cancelHideTimer();
-            playerState.isDragging.value = true;
-          },
-          onDragEnd: () {
-            cancelAndRestartTimer();
-            playerState.isDragging.value = false;
-          },
-          onDragUpdate: (details) {
-            // LoggerUtils.logger.d("进度条改变事件");
-          },
-          onSeek: (details) {
-            playerViewModel.seekTo(Duration(seconds: details.inSeconds));
-          },
-        ),
-      );
-    });
     bottomControlUIItemList = [
       BottomUIItemModel(
         type: ControlType.play,
@@ -340,73 +306,6 @@ class UIViewModel extends BaseViewModel {
           visible: Signal(true),
         ),
     ];
-
-    bottomControlBar = Watch(
-      (context) => playerState.isFullscreen.value
-          ? Column(
-              children: [
-                progressBar,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: bottomControlUIItemList
-                      .where((item) => item.visible.value)
-                      .map((e) => e.child)
-                      .toList(),
-                ),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  color: StyleConstant.iconColor,
-                  onPressed: () => playerViewModel.playOrPause(),
-                  icon: Watch((context) {
-                    var isFinished = playerState.isFinished.value;
-                    var isPlaying = playerState.isPlaying.value;
-                    return isFinished
-                        ? IconConstant.bottomReplayPlayIcon
-                        : (isPlaying
-                              ? IconConstant.bottomPauseIcon
-                              : IconConstant.bottomPlayIcon);
-                  }),
-                ),
-                Watch(
-                  (context) =>
-                      playerViewModel.resourceState.playingChapterCount > 1
-                      ? Tooltip(
-                          message: playerViewModel.resourceState.haveNext
-                              ? "下一个视频"
-                              : "已经是最后一个视频", // 提示文本
-                          child: IconButton(
-                            padding: const EdgeInsets.symmetric(horizontal: 0),
-                            color: playerViewModel.resourceState.haveNext
-                                ? StyleConstant.iconColor
-                                : Colors.grey.shade400, // 置灰效果
-                            onPressed: playerViewModel.resourceState.haveNext
-                                ? () => playerViewModel.nextPlay()
-                                : null, // 禁用时设为 null
-                            icon: IconConstant.nextPlayIcon,
-                            enableFeedback:
-                                !playerViewModel.resourceState.haveNext, // 禁用反馈
-                          ),
-                        )
-                      : Container(),
-                ),
-                Expanded(child: progressBar),
-                if (!playerViewModel.onlyFullscreen.value)
-                  IconButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    color: textColor,
-                    onPressed: () {
-                      playerViewModel.fullscreenUtils.toggleFullscreen();
-                    },
-                    icon: Icon(Icons.fullscreen_exit_rounded),
-                  ),
-              ],
-            ),
-    );
   }
 
   Future<void> handleScreenChange(Size size) async {

@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../enum/player_ui_key_enum.dart';
 import '../view_model/ui_view_model.dart';
 
 class BackgroundEventUI extends StatefulWidget {
@@ -50,11 +51,28 @@ class _BackgroundEventUIState extends State<BackgroundEventUI> {
           uiViewModel.volumeOrBrightnessOnVerticalDragEnd();
         }
       },
-      onLongPressDown: (LongPressDownDetails details) {
+      onLongPressStart: (LongPressStartDetails details) {
+        if (uiViewModel.disposed ||
+            uiViewModel.playerViewModel.disposed ||
+            uiViewModel.playerState.isFinished.value ||
+            !uiViewModel.playerState.isPlaying.value ||
+            !uiViewModel.playerState.isInitialized.value ||
+            uiViewModel.uiState.uiLocked.value) {
+          return;
+        }
+        uiViewModel.playerState.beforeLongPressMultiplePlay =
+            uiViewModel.playerState.playSpeed.value;
+        uiViewModel.playerState.playSpeed.value =
+            uiViewModel.playerState.longPressMultiplePlay;
         // 倍数播放
+        uiViewModel.showUIByKeyList([UIKeyEnum.longPressMultiplePlayUI.name]);
       },
-      onLongPressUp: () {
+      onLongPressEnd: (LongPressEndDetails details) {
+        uiViewModel.playerState.playSpeed.value =
+            uiViewModel.playerState.beforeLongPressMultiplePlay;
+        uiViewModel.playerState.beforeLongPressMultiplePlay = 1.0;
         // 倍数播放
+        uiViewModel.hideUIByKeyList([UIKeyEnum.longPressMultiplePlayUI.name]);
       },
     );
   }
