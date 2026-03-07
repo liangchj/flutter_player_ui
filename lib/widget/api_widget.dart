@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_player_ui/widget/resource_header_widget.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:signals/signals_flutter.dart';
 
@@ -11,6 +12,7 @@ import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/auto_compute_sliver_grid_count.dart';
 import '../utils/calculate_color_utils.dart';
+import '../utils/widget_utils.dart';
 import '../view_model/player_view_model.dart';
 import '../view_model/ui_view_model.dart';
 import 'clickable_button_widget.dart';
@@ -89,6 +91,54 @@ class _ApiWidgetState extends State<ApiWidget> {
       }
       return Column(
         children: [
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: StyleConstant.safeSpace,
+              left: option.bottomSheet ? StyleConstant.safeSpace : 0,
+              right: option.bottomSheet ? StyleConstant.safeSpace : 0,
+            ),
+            child: ResourceHeaderWidget(
+              left: Watch(
+                (context) => Text(
+                  "API${option.bottomSheet ? "" : ": ${option.isSelect ? resourceState.playingApi?.api?.name ?? "" : ""}"}",
+                  style: TextStyle(
+                    color: textColor,
+                    // fontSize: StyleConstant.fontSize,
+                  ),
+                ),
+              ),
+              isSelect: option.isSelect,
+              isDialog: option.bottomSheet,
+              right: option.bottomSheet
+                  ? WidgetUtils.dialogCloseButton(
+                      onClose: () {
+                        option.dialogFn?.call(SourceOptionDialogType.close);
+                      },
+                    )
+                  : Watch(
+                      (context) => InkWell(
+                        onTap: () {
+                          option.dialogFn?.call(SourceOptionDialogType.open);
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              "${resourceState.apiCount}源",
+                              style: TextStyle(
+                                color: activatedTextColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_right_rounded,
+                              color: activatedTextColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+          ),
           option.bottomSheet
               ? _bottomSheetList(context)
               : option.isSelect

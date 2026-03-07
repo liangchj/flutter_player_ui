@@ -10,6 +10,7 @@ export 'model/resource/resource_model.dart';
 export 'model/resource/api_model.dart';
 export 'model/resource/source_group_model.dart';
 export 'model/storage/play_history_model.dart';
+export 'utils/widget_utils.dart';
 export 'utils/player_utils.dart';
 export 'utils/time_format_utils.dart';
 export 'interface/player_data_storage.dart';
@@ -20,5 +21,8 @@ export 'widget/chapter_group_widget.dart';
 export 'widget/chapter_list_widget.dart';
 export 'widget/chapter_widget.dart';
 export 'widget/source_group_widget.dart';
+export 'widget/resource_header_widget.dart';
+
+export 'constant/style_constant.dart';
 
 

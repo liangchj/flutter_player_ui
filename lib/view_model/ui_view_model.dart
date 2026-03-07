@@ -656,8 +656,11 @@ class UIViewModel extends BaseViewModel {
       hideUIByKeyList([UIKeyEnum.centerBrightnessUI.name]);
     } else {
       // 获取当前亮度
+
       ScreenBrightness.instance.application.then(
-        (value) => playerState.brightness.value = (value * 100).floor(),
+        (value) {
+          print("获取当前亮度:${(value * 100).floor()}");
+          playerState.brightness.value = (value * 100).floor();}
       );
       playerState.isBrightnessDragging.value = true;
       showUIKey = UIKeyEnum.centerBrightnessUI.name;

@@ -11,9 +11,11 @@ import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/auto_compute_sliver_grid_count.dart';
 import '../utils/calculate_color_utils.dart';
+import '../utils/widget_utils.dart';
 import '../view_model/player_view_model.dart';
 import '../view_model/ui_view_model.dart';
 import 'clickable_button_widget.dart';
+import 'resource_header_widget.dart';
 
 class SourceGroupWidget extends StatefulWidget {
   const SourceGroupWidget({
@@ -95,7 +97,53 @@ class _SourceGroupWidgetState extends State<SourceGroupWidget> {
       }
       return Column(
         children: [
-          // _createHeader(context),
+          Padding(
+            padding: EdgeInsets.only(bottom: StyleConstant.safeSpace,
+              left: option.bottomSheet ? StyleConstant.safeSpace : 0,
+              right: option.bottomSheet ? StyleConstant.safeSpace : 0,
+            ),
+            child: ResourceHeaderWidget(
+              left: Watch(
+                (context) => Text(
+                  "资源组${option.bottomSheet ? "" : ": ${option.isSelect ? resourceState.playingSourceGroup?.name ?? "" : ""}"}",
+                  style: TextStyle(
+                    color: textColor,
+                    // fontSize: StyleConstant.fontSize,
+                  ),
+                ),
+              ),
+              isSelect: option.isSelect,
+              isDialog: option.bottomSheet,
+              right: option.bottomSheet
+                  ? WidgetUtils.dialogCloseButton(
+                      onClose: () {
+                        option.dialogFn?.call(SourceOptionDialogType.close);
+                      },
+                    )
+                  : Watch(
+                      (context) => InkWell(
+                        onTap: () {
+                          option.dialogFn?.call(SourceOptionDialogType.open);
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              "${resourceState.activatedApiSourceGroupCount}组",
+                              style: TextStyle(
+                                color: activatedTextColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_right_rounded,
+                              color: activatedTextColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+          ),
           option.bottomSheet
               ? _bottomSheetList(context)
               : option.isSelect

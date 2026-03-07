@@ -9,10 +9,12 @@ import '../state/player_state.dart';
 import '../state/resource_state.dart';
 import '../utils/auto_compute_sliver_grid_count.dart';
 import '../utils/calculate_color_utils.dart';
+import '../utils/widget_utils.dart';
 import '../view_model/player_view_model.dart';
 import '../view_model/ui_view_model.dart';
 import 'chapter_group_widget.dart';
 import 'chapter_widget.dart';
+import 'resource_header_widget.dart';
 
 class ChapterListWidget extends StatefulWidget {
   const ChapterListWidget({
@@ -170,7 +172,54 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
       }
       return Column(
         children: [
-          // _createHeader(context),
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: StyleConstant.safeSpace,
+              left: option.bottomSheet ? StyleConstant.safeSpace : 0,
+              right: option.bottomSheet ? StyleConstant.safeSpace : 0,
+            ),
+            child: ResourceHeaderWidget(
+              left: Watch(
+                (context) => Text(
+                  "章节${option.bottomSheet ? "" : ": "}",
+                  style: TextStyle(
+                    color: textColor,
+                    // fontSize: StyleConstant.fontSize,
+                  ),
+                ),
+              ),
+              isSelect: option.isSelect,
+              isDialog: option.bottomSheet,
+              right: option.bottomSheet
+                  ? WidgetUtils.dialogCloseButton(
+                      onClose: () {
+                        option.dialogFn?.call(SourceOptionDialogType.close);
+                      },
+                    )
+                  : Watch(
+                      (context) => InkWell(
+                        onTap: () {
+                          option.dialogFn?.call(SourceOptionDialogType.open);
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              "${resourceState.playingChapterCount}集",
+                              style: TextStyle(
+                                color: activatedTextColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_right_rounded,
+                              color: activatedTextColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+          ),
           ChapterGroupWidget(
             option: SourceOptionModel(),
             uiViewModel: uiViewModel,
@@ -210,7 +259,7 @@ class _ChapterListWidgetState extends State<ChapterListWidget> {
                           child: _horizontalScroll(context),
                         )
                       : _list(context)
-                : Text("列表加载中...", style: TextStyle(color: textColor),),
+                : Text("列表加载中...", style: TextStyle(color: textColor)),
           ),
         ],
       );
